@@ -19,7 +19,7 @@
     <!-- Header / Navbar Resmi -->
     <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
         <div class="container">
-            <span class="navbar-brand mb-0 h1">📋 Sistem Penerimaan Surat - Setum Polri</span>
+            <span class="navbar-brand mb-0 h1">📨 Sistem Penerimaan Surat - Setum Polri</span>
         </div>
     </nav>
 
@@ -33,18 +33,25 @@
             <div class="card-body">
                 <input type="hidden" id="edit_id">
 
+                <!-- BARIS 1: Jenis, Nomor, Tanggal -->
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
+                        <label for="jenis_surat" class="form-label fw-bold">Jenis Surat:</label>
+                        <input type="text" id="jenis_surat" class="form-control" placeholder="Cth: Biasa, Rahasia..." required>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
                         <label for="nomor_surat" class="form-label fw-bold">Nomor Surat:</label>
                         <input type="text" id="nomor_surat" class="form-control" required>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label for="tanggal_surat" class="form-label fw-bold">Tanggal Surat:</label>
-                        <input type="date" id="tanggal_surat" class="form-control" required>
+                    <div class="col-md-4 mb-3">
+                        <label for="tanggal_diterima" class="form-label fw-bold">Tanggal Diterima:</label>
+                        <input type="date" id="tanggal_diterima" class="form-control" required>
                     </div>
                 </div>
 
+                <!-- BARIS 2: Pengirim dan Tujuan -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="pengirim" class="form-label fw-bold">Instansi Pengirim:</label>
@@ -87,11 +94,11 @@
                 <!-- Panel Pencarian dan Tombol Ekspor -->
                 <div class="row g-2 mb-3">
                     <div class="col-md-6">
-                        <input type="text" id="inputPencarian" class="form-control" placeholder="Cari nomor surat, pengirim, atau tujuan..." onkeyup="tampilkanSurat()">
+                        <input type="text" id="inputPencarian" class="form-control" placeholder="Cari nomor surat, jenis, pengirim, atau tujuan..." onkeyup="tampilkanSurat()">
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <button class="btn btn-success btn-sm me-1" onclick="unduhLaporanExcel()">📥 Unduh Excel</button>
-                        <button class="btn btn-danger btn-sm" onclick="unduhLaporanPDF()">📄 Unduh PDF</button>
+                        <button class="btn btn-success btn-sm me-1" onclick="unduhLaporanExcel()">📊 Unduh Excel</button>
+                        <button class="btn btn-danger btn-sm" onclick="unduhLaporanPDF()">📑 Unduh PDF</button>
                     </div>
                 </div>
 
@@ -101,8 +108,9 @@
                         <thead class="table-primary text-center">
                             <tr>
                                 <th>No</th>
+                                <th>Jenis Surat</th>
                                 <th>Nomor Surat</th>
-                                <th>Tanggal</th>
+                                <th>Tanggal Diterima</th>
                                 <th>Instansi Pengirim</th>
                                 <th>Tujuan</th>
                                 <th>Perihal</th>
@@ -135,14 +143,15 @@
         // --- 2. FUNGSI MENYIMPAN / MEMPERBARUI SURAT ---
         async function simpanSurat() {
             const editId = document.getElementById('edit_id').value;
+            const jenisSurat = document.getElementById('jenis_surat').value;
             const nomorSurat = document.getElementById('nomor_surat').value;
-            const tanggalSurat = document.getElementById('tanggal_surat').value;
+            const tanggalDiterima = document.getElementById('tanggal_diterima').value;
             const pengirimSurat = document.getElementById('pengirim').value;
             const tujuanSurat = document.getElementById('tujuan').value;
             const perihalSurat = document.getElementById('perihal').value;
             const inputFile = document.getElementById('file_surat');
 
-            if(!nomorSurat || !tanggalSurat || !pengirimSurat || !tujuanSurat || !perihalSurat) {
+            if(!jenisSurat || !nomorSurat || !tanggalDiterima || !pengirimSurat || !tujuanSurat || !perihalSurat) {
                 alert("Mohon isi semua data teks surat!");
                 return;
             }
@@ -172,8 +181,9 @@
             }
 
             let dataYangDisimpan = { 
+                jenis_surat: jenisSurat,
                 nomor_surat: nomorSurat, 
-                tanggal_surat: tanggalSurat, 
+                tanggal_diterima: tanggalDiterima, 
                 pengirim: pengirimSurat, 
                 tujuan: tujuanSurat,
                 perihal: perihalSurat
@@ -220,8 +230,9 @@
                 .select('*')
                 .order('dibuat_pada', { ascending: false });
 
+            // Fitur pencarian diperbarui agar bisa mencari berdasarkan jenis_surat juga
             if (keyword) {
-                query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%`);
+                query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%`);
             }
 
             const { data, error } = await query;
@@ -237,7 +248,7 @@
             tbody.innerHTML = ''; 
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-3 text-muted">Tidak ada data surat yang ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-3 text-muted">Tidak ada data surat yang ditemukan.</td></tr>`;
                 return;
             }
 
@@ -254,8 +265,9 @@
                 const baris = `
                     <tr>
                         <td class="text-center">${index + 1}</td>
+                        <td>${surat.jenis_surat || '-'}</td>
                         <td>${surat.nomor_surat}</td>
-                        <td>${surat.tanggal_surat}</td>
+                        <td>${surat.tanggal_diterima || '-'}</td>
                         <td>${surat.pengirim}</td>
                         <td>${surat.tujuan || '-'}</td>
                         <td>${surat.perihal}</td>
@@ -276,8 +288,9 @@
             
             if (surat) {
                 document.getElementById('edit_id').value = surat.id;
+                document.getElementById('jenis_surat').value = surat.jenis_surat || '';
                 document.getElementById('nomor_surat').value = surat.nomor_surat;
-                document.getElementById('tanggal_surat').value = surat.tanggal_surat;
+                document.getElementById('tanggal_diterima').value = surat.tanggal_diterima || '';
                 document.getElementById('pengirim').value = surat.pengirim;
                 document.getElementById('tujuan').value = surat.tujuan || '';
                 document.getElementById('perihal').value = surat.perihal;
@@ -297,8 +310,9 @@
         // --- 5. FUNGSI MEMBATALKAN MODE EDIT ---
         function batalEdit() {
             document.getElementById('edit_id').value = '';
+            document.getElementById('jenis_surat').value = '';
             document.getElementById('nomor_surat').value = '';
-            document.getElementById('tanggal_surat').value = '';
+            document.getElementById('tanggal_diterima').value = '';
             document.getElementById('pengirim').value = '';
             document.getElementById('tujuan').value = '';
             document.getElementById('perihal').value = '';
@@ -338,8 +352,9 @@
             const dataUntukExcel = dataSuratTerakhir.map((surat, index) => {
                 return { 
                     "No": index + 1, 
+                    "Jenis Surat": surat.jenis_surat,
                     "Nomor Surat": surat.nomor_surat, 
-                    "Tanggal Surat": surat.tanggal_surat, 
+                    "Tanggal Diterima": surat.tanggal_diterima, 
                     "Instansi Pengirim": surat.pengirim, 
                     "Tujuan": surat.tujuan, 
                     "Perihal": surat.perihal 
@@ -361,11 +376,12 @@
             doc.setFontSize(11);
             doc.text("Dicetak pada: " + new Date().toLocaleDateString('id-ID'), 14, 28);
 
-            const namaKolom = [['No', 'Nomor Surat', 'Tanggal', 'Instansi Pengirim', 'Tujuan', 'Perihal']];
+            const namaKolom = [['No', 'Jenis Surat', 'Nomor Surat', 'Tanggal Diterima', 'Instansi Pengirim', 'Tujuan', 'Perihal']];
             const barisData = dataSuratTerakhir.map((surat, index) => [ 
                 index + 1, 
+                surat.jenis_surat || '-',
                 surat.nomor_surat, 
-                surat.tanggal_surat, 
+                surat.tanggal_diterima || '-', 
                 surat.pengirim, 
                 surat.tujuan || '-', 
                 surat.perihal 
