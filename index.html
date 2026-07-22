@@ -37,7 +37,51 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label for="jenis_surat" class="form-label fw-bold">Jenis Surat:</label>
-                        <input type="text" id="jenis_surat" class="form-control" placeholder="Cth: Biasa, Rahasia..." required>
+                        <!-- Mengganti input teks menjadi dropdown (select) -->
+                        <select id="jenis_surat" class="form-select" required>
+                            <option value="" disabled selected>-- Pilih Jenis Surat --</option>
+                            <option value="Amanat">Amanat</option>
+                            <option value="Berita Acara">Berita Acara</option>
+                            <option value="Biasa">Biasa</option>
+                            <option value="Instansi Luar">Instansi Luar</option>
+                            <option value="Instruksi">Instruksi</option>
+                            <option value="Keputusan">Keputusan</option>
+                            <option value="Laporan">Laporan</option>
+                            <option value="Maklumat">Maklumat</option>
+                            <option value="Nota Dinas">Nota Dinas</option>
+                            <option value="Notula">Notula</option>
+                            <option value="Panggilan Personel">Panggilan Personel</option>
+                            <option value="Pengaduan Masyarakat">Pengaduan Masyarakat</option>
+                            <option value="Pengumuman">Pengumuman</option>
+                            <option value="Peraturan">Peraturan</option>
+                            <option value="Rahasia">Rahasia</option>
+                            <option value="Ren Ops">Ren Ops</option>
+                            <option value="Sandi">Sandi</option>
+                            <option value="Sangat Rahasia">Sangat Rahasia</option>
+                            <option value="Sipil">Sipil</option>
+                            <option value="SOP">SOP</option>
+                            <option value="Surat Cuti">Surat Cuti</option>
+                            <option value="Surat Edaran">Surat Edaran</option>
+                            <option value="Surat Izin">Surat Izin</option>
+                            <option value="Surat Izin Jalan">Surat Izin Jalan</option>
+                            <option value="Surat Keterangan">Surat Keterangan</option>
+                            <option value="Surat Pemberitahuan">Surat Pemberitahuan</option>
+                            <option value="Surat Pengantar">Surat Pengantar</option>
+                            <option value="Surat Perintah">Surat Perintah</option>
+                            <option value="Surat Perjalanan Dinas">Surat Perjalanan Dinas</option>
+                            <option value="Surat Pernyataan">Surat Pernyataan</option>
+                            <option value="Surat Persetujuan">Surat Persetujuan</option>
+                            <option value="Surat Rekomendasi">Surat Rekomendasi</option>
+                            <option value="Surat Takkah">Surat Takkah</option>
+                            <option value="Surat Telegram">Surat Telegram</option>
+                            <option value="Surat Telegram Rahasia">Surat Telegram Rahasia</option>
+                            <option value="Surat Tugas">Surat Tugas</option>
+                            <option value="Surat Undangan">Surat Undangan</option>
+                            <option value="Telaahan Staf">Telaahan Staf</option>
+                            <option value="Terbatas">Terbatas</option>
+                            <option value="Undangan">Undangan</option>
+                            <option value="Undangan Cetak">Undangan Cetak</option>
+                        </select>
                     </div>
 
                     <div class="col-md-4 mb-3">
@@ -143,8 +187,9 @@
             const tujuanSurat = document.getElementById('tujuan').value;
             const perihalSurat = document.getElementById('perihal').value;
 
+            // Validasi: Memastikan dropdown jenis surat telah dipilih (bukan opsi default kosong)
             if(!jenisSurat || !nomorSurat || !tanggalDiterima || !pengirimSurat || !tujuanSurat || !perihalSurat) {
-                alert("Mohon isi semua data teks surat!");
+                alert("Mohon lengkapi semua data teks, termasuk memilih Jenis Surat!");
                 return;
             }
 
@@ -245,6 +290,7 @@
             
             if (surat) {
                 document.getElementById('edit_id').value = surat.id;
+                // JS akan otomatis memilih <option> yang nilai value-nya sama dengan data dari database
                 document.getElementById('jenis_surat').value = surat.jenis_surat || '';
                 document.getElementById('nomor_surat').value = surat.nomor_surat;
                 document.getElementById('tanggal_diterima').value = surat.tanggal_diterima || '';
@@ -266,7 +312,7 @@
         // --- 5. FUNGSI MEMBATALKAN MODE EDIT ---
         function batalEdit() {
             document.getElementById('edit_id').value = '';
-            document.getElementById('jenis_surat').value = '';
+            document.getElementById('jenis_surat').value = ''; // Mengembalikan dropdown ke nilai default (kosong)
             document.getElementById('nomor_surat').value = '';
             document.getElementById('tanggal_diterima').value = '';
             document.getElementById('pengirim').value = '';
