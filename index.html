@@ -7,20 +7,22 @@
     <!-- Menambahkan library Supabase dari CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 850px; margin: auto; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], input[type="date"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        input[type="text"], input[type="date"], input[type="file"] { width: 100%; padding: 8px; box-sizing: border-box; }
         button { padding: 10px 15px; background-color: #004d99; color: white; border: none; cursor: pointer; }
         button:hover { background-color: #003366; }
         #pesan { margin-top: 15px; font-weight: bold; }
         
-        /* Gaya untuk tabel, tombol hapus, dan kotak pencarian */
+        /* Gaya untuk tabel, tombol aksi, dan kotak pencarian */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #004d99; color: white; }
-        .btn-hapus { background-color: #cc0000; padding: 5px 10px; font-size: 12px; }
+        .btn-hapus { background-color: #cc0000; padding: 5px 10px; font-size: 12px; color: white; border: none; cursor: pointer; }
         .btn-hapus:hover { background-color: #990000; }
+        .btn-download { background-color: #008000; padding: 5px 10px; font-size: 12px; color: white; text-decoration: none; display: inline-block; }
+        .btn-download:hover { background-color: #006600; }
         .search-box { margin-bottom: 15px; display: flex; gap: 10px; }
         .search-box input { flex: 1; padding: 8px; }
     </style>
@@ -49,6 +51,12 @@
         <input type="text" id="perihal" required>
     </div>
 
+    <!-- BAGIAN BARU: Input untuk Unggah File PDF -->
+    <div class="form-group">
+        <label for="file_surat">Scan File Surat (Format PDF):</label>
+        <input type="file" id="file_surat" accept=".pdf">
+    </div>
+
     <button onclick="simpanSurat()">Simpan Data Surat</button>
     <div id="pesan"></div>
 
@@ -56,7 +64,6 @@
 
     <h2>Daftar Surat Masuk</h2>
 
-    <!-- BAGIAN BARU: Kotak Pencarian -->
     <div class="search-box">
         <input type="text" id="inputPencarian" placeholder="Cari berdasarkan nomor surat atau pengirim..." onkeyup="tampilkanSurat()">
     </div>
@@ -69,6 +76,7 @@
                 <th>Tanggal</th>
                 <th>Pengirim</th>
                 <th>Perihal</th>
+                <th>File PDF</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -83,37 +91,73 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0b2F2bHFjd2x2a3lra21ybGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NjQ0MzAsImV4cCI6MjEwMDI0MDQzMH0.vGInPpN5mnG2nMS2HiZYdKvhmMOMIuus4M-qSAYlXOI';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. FUNGSI MENYIMPAN SURAT ---
+        // --- 2. FUNGSI MENYIMPAN SURAT & UPLOAD FILE ---
         async function simpanSurat() {
             const nomorSurat = document.getElementById('nomor_surat').value;
             const tanggalSurat = document.getElementById('tanggal_surat').value;
             const pengirimSurat = document.getElementById('pengirim').value;
             const perihalSurat = document.getElementById('perihal').value;
+            const inputFile = document.getElementById('file_surat');
 
             if(!nomorSurat || !tanggalSurat || !pengirimSurat || !perihalSurat) {
-                alert("Mohon isi semua data surat!");
+                alert("Mohon isi semua data teks surat!");
                 return;
             }
 
-            const { data, error } = await supabaseClient
+            document.getElementById('pesan').style.color = '#004d99';
+            document.getElementById('pesan').innerText = "Sedang memproses dan menyimpan data...";
+
+            let filePath = null;
+
+            // Jika petugas memilih file PDF untuk diunggah
+            if (inputFile.files.length > 0) {
+                const file = inputFile.files[0];
+                // Membuat nama file yang unik berdasarkan waktu agar tidak bentrok
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}.${fileExt}`;
+                filePath = `${fileName}`;
+
+                // Mengunggah file ke Supabase Storage (bucket 'berkas_surat')
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('berkas_surat')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    console.error("Gagal upload file:", uploadError);
+                    alert("Gagal mengunggah file PDF!");
+                    document.getElementById('pesan').innerText = "";
+                    return;
+                }
+            }
+
+            // Menyimpan data teks dan path file ke tabel 'surat_masuk'
+            // Catatan: Pastikan kolom 'file_url' sudah ada di tabel database Supabase-mu
+            const { error: dbError } = await supabaseClient
                 .from('surat_masuk')
                 .insert([
-                    { nomor_surat: nomorSurat, tanggal_surat: tanggalSurat, pengirim: pengirimSurat, perihal: perihalSurat }
+                    { 
+                        nomor_surat: nomorSurat, 
+                        tanggal_surat: tanggalSurat, 
+                        pengirim: pengirimSurat, 
+                        perihal: perihalSurat,
+                        file_url: filePath 
+                    }
                 ]);
 
-            if (error) {
-                console.error("Ada masalah:", error);
+            if (dbError) {
+                console.error("Ada masalah database:", dbError);
                 document.getElementById('pesan').style.color = 'red';
-                document.getElementById('pesan').innerText = "Gagal menyimpan data!";
+                document.getElementById('pesan').innerText = "Gagal menyimpan data ke database!";
             } else {
                 document.getElementById('pesan').style.color = 'green';
-                document.getElementById('pesan').innerText = "Surat berhasil disimpan!";
+                document.getElementById('pesan').innerText = "Surat dan file berhasil disimpan!";
                 
                 // Kosongkan form
                 document.getElementById('nomor_surat').value = '';
                 document.getElementById('tanggal_surat').value = '';
                 document.getElementById('pengirim').value = '';
                 document.getElementById('perihal').value = '';
+                document.getElementById('file_surat').value = '';
 
                 tampilkanSurat();
             }
@@ -121,7 +165,6 @@
 
         // --- 3. FUNGSI MENAMPILKAN DAN MENCARI SURAT ---
         async function tampilkanSurat() {
-            // Mengambil nilai teks yang sedang diketik di kotak pencarian
             const keyword = document.getElementById('inputPencarian').value;
 
             let query = supabaseClient
@@ -129,7 +172,6 @@
                 .select('*')
                 .order('dibuat_pada', { ascending: false });
 
-            // Jika kotak pencarian diisi, filter data berdasarkan nomor_surat atau pengirim
             if (keyword) {
                 query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%`);
             }
@@ -145,11 +187,22 @@
             tbody.innerHTML = ''; 
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Tidak ada data surat yang ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Tidak ada data surat yang ditemukan.</td></tr>`;
                 return;
             }
 
             data.forEach((surat, index) => {
+                // Membuat tombol unduh jika file tersedia
+                let tombolFile = "Tidak ada file";
+                if (surat.file_url) {
+                    // Mendapatkan Public URL dari Supabase Storage
+                    const { data: publicURLData } = supabaseClient.storage
+                        .from('berkas_surat')
+                        .getPublicUrl(surat.file_url);
+
+                    tombolFile = `<a href="${publicURLData.publicUrl}" target="_blank" class="btn-download">Buka PDF</a>`;
+                }
+
                 const baris = `
                     <tr>
                         <td>${index + 1}</td>
@@ -157,8 +210,9 @@
                         <td>${surat.tanggal_surat}</td>
                         <td>${surat.pengirim}</td>
                         <td>${surat.perihal}</td>
+                        <td>${tombolFile}</td>
                         <td>
-                            <button class="btn-hapus" onclick="hapusSurat('${surat.id}')">Hapus</button>
+                            <button class="btn-hapus" onclick="hapusSurat('${surat.id}', '${surat.file_url || ''}')">Hapus</button>
                         </td>
                     </tr>
                 `;
@@ -166,11 +220,19 @@
             });
         }
 
-        // --- 4. FUNGSI MENGHAPUS SURAT ---
-        async function hapusSurat(idSurat) {
+        // --- 4. FUNGSI MENGHAPUS SURAT & FILE TERKAIT ---
+        async function hapusSurat(idSurat, fileUrl) {
             const konfirmasi = confirm("Apakah Anda yakin ingin menghapus data surat ini?");
             if (!konfirmasi) return;
 
+            // Jika ada file terlampir di storage, hapus juga file fisiknya
+            if (fileUrl) {
+                await supabaseClient.storage
+                    .from('berkas_surat')
+                    .remove([fileUrl]);
+            }
+
+            // Hapus data dari tabel database
             const { error } = await supabaseClient
                 .from('surat_masuk')
                 .delete()
