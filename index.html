@@ -94,11 +94,11 @@
                     </div>
                 </div>
 
-                <!-- BARIS 2: Pengirim dan Tujuan -->
+                <!-- BARIS 2: Pengirim (Dropdown & Input Manual) dan Tujuan -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="pengirim" class="form-label fw-bold">Pengirim:</label>
-                        <select id="pengirim" class="form-select" required>
+                        <select id="pengirim" class="form-select mb-2" onchange="cekPilihanPengirim()" required>
                             <option value="" disabled selected>-- Pilih Pengirim --</option>
                             <option value="Instansi Luar">Instansi Luar</option>
                             <option value="Itwasum Polri">Itwasum Polri</option>
@@ -128,6 +128,12 @@
                             <option value="Yanma Polri">Yanma Polri</option>
                             <option value="Setum Polri">Setum Polri</option>
                         </select>
+
+                        <!-- INPUT MANUAL TAMBAHAN KETIKA PILIH INSTANSI LUAR -->
+                        <div id="wrapper_pengirim_lain" class="d-none">
+                            <label for="pengirim_lain" class="form-label fw-bold text-muted small">Silakan masukan pengirim disini:</label>
+                            <input type="text" id="pengirim_lain" class="form-control" placeholder="Masukkan nama instansi luar...">
+                        </div>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -180,7 +186,7 @@
                     </div>
                 </div>
 
-                <!-- Tabel Data Responsif dengan Kelas Perataan Rapi -->
+                <!-- Tabel Data Responsif -->
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped table-hover align-middle">
                         <thead class="table-primary text-center align-middle">
@@ -217,15 +223,37 @@
 
         let dataSuratTerakhir = [];
 
+        // --- FUNGSI MENGATUR MUNCULNYA INPUT MANUAL PENGIRIM ---
+        function cekPilihanPengirim() {
+            const pilihan = document.getElementById('pengirim').value;
+            const wrapperLain = document.getElementById('wrapper_pengirim_lain');
+            const inputLain = document.getElementById('pengirim_lain');
+
+            if (pilihan === "Instansi Luar") {
+                wrapperLain.classList.remove('d-none'); // Tampilkan kotak input
+                inputLain.focus();
+            } else {
+                wrapperLain.classList.add('d-none'); // Sembunyikan kotak input
+                inputLain.value = ""; // Kosongkan nilainya
+            }
+        }
+
         // --- 2. FUNGSI MENYIMPAN / MEMPERBARUI SURAT ---
         async function simpanSurat() {
             const editId = document.getElementById('edit_id').value;
             const jenisSurat = document.getElementById('jenis_surat').value;
             const nomorSurat = document.getElementById('nomor_surat').value;
             const tanggalDiterima = document.getElementById('tanggal_diterima').value;
-            const pengirimSurat = document.getElementById('pengirim').value;
+            const pilihanPengirim = document.getElementById('pengirim').value;
+            const inputPengirimLain = document.getElementById('pengirim_lain').value;
             const tujuanSurat = document.getElementById('tujuan').value;
             const perihalSurat = document.getElementById('perihal').value;
+
+            // Tentukan nilai akhir pengirim (jika Instansi Luar, ambil dari input text manual)
+            let pengirimFinal = pilihanPengirim;
+            if (pilihanPengirim === "Instansi Luar") {
+                pengirimFinal = inputPengirimLain;
+            }
 
             // --- VALIDASI SPESIFIK SATU PER SATU ---
             if (!jenisSurat) {
@@ -243,9 +271,14 @@
                 document.getElementById('tanggal_diterima').focus();
                 return;
             }
-            if (!pengirimSurat) {
+            if (!pilihanPengirim) {
                 alert("Peringatan: Pengirim belum dipilih!");
                 document.getElementById('pengirim').focus();
+                return;
+            }
+            if (pilihanPengirim === "Instansi Luar" && !inputPengirimLain) {
+                alert("Peringatan: Silakan masukan pengirim disini!");
+                document.getElementById('pengirim_lain').focus();
                 return;
             }
             if (!tujuanSurat) {
@@ -268,7 +301,7 @@
                 jenis_surat: jenisSurat,
                 nomor_surat: nomorSurat, 
                 tanggal_diterima: tanggalDiterima, 
-                pengirim: pengirimSurat, 
+                pengirim: pengirimFinal, 
                 tujuan: tujuanSurat,
                 perihal: perihalSurat
             };
@@ -370,7 +403,24 @@
                 document.getElementById('jenis_surat').value = surat.jenis_surat || '';
                 document.getElementById('nomor_surat').value = surat.nomor_surat;
                 document.getElementById('tanggal_diterima').value = surat.tanggal_diterima || '';
-                document.getElementById('pengirim').value = surat.pengirim || '';
+                
+                const selectPengirim = document.getElementById('pengirim');
+                const inputPengirimLain = document.getElementById('pengirim_lain');
+                const wrapperLain = document.getElementById('wrapper_pengirim_lain');
+
+                // Cek apakah pengirim ada di dalam daftar dropdown atau merupakan instansi luar manual
+                let opsiAda = Array.from(selectPengirim.options).some(option => option.value === surat.pengirim);
+
+                if (opsiAda) {
+                    selectPengirim.value = surat.pengirim;
+                    wrapperLain.classList.add('d-none');
+                    inputPengirimLain.value = "";
+                } else {
+                    selectPengirim.value = "Instansi Luar";
+                    wrapperLain.classList.remove('d-none');
+                    inputPengirimLain.value = surat.pengirim;
+                }
+
                 document.getElementById('tujuan').value = surat.tujuan || '';
                 document.getElementById('perihal').value = surat.perihal;
                 
@@ -392,6 +442,8 @@
             document.getElementById('nomor_surat').value = '';
             document.getElementById('tanggal_diterima').value = '';
             document.getElementById('pengirim').value = '';
+            document.getElementById('pengirim_lain').value = '';
+            document.getElementById('wrapper_pengirim_lain').classList.add('d-none');
             document.getElementById('tujuan').value = '';
             document.getElementById('perihal').value = '';
 
