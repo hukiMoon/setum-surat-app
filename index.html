@@ -5,117 +5,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Penerimaan Surat - Setum Polri</title>
     
+    <!-- CSS Bootstrap 5 untuk Desain UI/UX Modern -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <!-- Library Supabase, SheetJS (Excel), dan jsPDF (PDF) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 900px; margin: auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], input[type="date"], input[type="file"] { width: 100%; padding: 8px; box-sizing: border-box; }
-        
-        button { padding: 10px 15px; background-color: #004d99; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #003366; }
-        #btn_batal_edit { background-color: #757575; display: none; margin-left: 10px; }
-        #btn_batal_edit:hover { background-color: #616161; }
-        
-        #pesan { margin-top: 15px; font-weight: bold; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #004d99; color: white; }
-        
-        .btn-edit { background-color: #fbc02d; padding: 5px 10px; font-size: 12px; color: black; border: none; cursor: pointer; margin-right: 5px; }
-        .btn-edit:hover { background-color: #f9a825; }
-        .btn-hapus { background-color: #cc0000; padding: 5px 10px; font-size: 12px; color: white; border: none; cursor: pointer; margin-top: 5px; }
-        .btn-hapus:hover { background-color: #990000; }
-        .btn-download { background-color: #008000; padding: 5px 10px; font-size: 12px; color: white; text-decoration: none; display: inline-block; }
-        .btn-download:hover { background-color: #006600; }
-        
-        .action-panel { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .action-panel input { flex: 1; padding: 8px; min-width: 200px; }
-        .btn-excel { background-color: #2e7d32; }
-        .btn-excel:hover { background-color: #1b5e20; }
-        .btn-pdf { background-color: #d32f2f; }
-        .btn-pdf:hover { background-color: #b71c1c; }
-    </style>
 </head>
-<body>
+<body class="bg-light">
 
-    <h2>Formulir Penerimaan Surat</h2>
-    
-    <input type="hidden" id="edit_id">
+    <!-- Header / Navbar Resmi -->
+    <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">📋 Sistem Penerimaan Surat - Setum Polri</span>
+        </div>
+    </nav>
 
-    <div class="form-group">
-        <label for="nomor_surat">Nomor Surat:</label>
-        <input type="text" id="nomor_surat" required>
+    <div class="container mb-5">
+        
+        <!-- Formulir Input dalam Card yang Elegan -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 text-primary fw-bold">Formulir Penerimaan Surat</h5>
+            </div>
+            <div class="card-body">
+                <input type="hidden" id="edit_id">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nomor_surat" class="form-label fw-bold">Nomor Surat:</label>
+                        <input type="text" id="nomor_surat" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="tanggal_surat" class="form-label fw-bold">Tanggal Surat:</label>
+                        <input type="date" id="tanggal_surat" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="pengirim" class="form-label fw-bold">Instansi Pengirim:</label>
+                        <input type="text" id="pengirim" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="tujuan" class="form-label fw-bold">Tujuan:</label>
+                        <input type="text" id="tujuan" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="perihal" class="form-label fw-bold">Perihal:</label>
+                    <input type="text" id="perihal" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="file_surat" class="form-label fw-bold">Scan File Surat (Format PDF):</label>
+                    <input type="file" id="file_surat" class="form-control" accept=".pdf">
+                    <small id="keterangan_file_edit" class="text-success mt-1 d-none">*Biarkan kosong jika tidak ingin mengubah file PDF sebelumnya.</small>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button id="btn_simpan" class="btn btn-primary" onclick="simpanSurat()">Simpan Data Surat</button>
+                    <button id="btn_batal_edit" class="btn btn-secondary d-none" onclick="batalEdit()">Batal Edit</button>
+                </div>
+                
+                <div id="pesan" class="mt-3 fw-bold"></div>
+            </div>
+        </div>
+
+        <!-- Bagian Daftar & Laporan Surat -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 text-primary fw-bold">Daftar & Laporan Surat Masuk</h5>
+            </div>
+            <div class="card-body">
+                
+                <!-- Panel Pencarian dan Tombol Ekspor -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <input type="text" id="inputPencarian" class="form-control" placeholder="Cari nomor surat, pengirim, atau tujuan..." onkeyup="tampilkanSurat()">
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <button class="btn btn-success btn-sm me-1" onclick="unduhLaporanExcel()">📥 Unduh Excel</button>
+                        <button class="btn btn-danger btn-sm" onclick="unduhLaporanPDF()">📄 Unduh PDF</button>
+                    </div>
+                </div>
+
+                <!-- Tabel Data Responsif -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover align-middle">
+                        <thead class="table-primary text-center">
+                            <tr>
+                                <th>No</th>
+                                <th>Nomor Surat</th>
+                                <th>Tanggal</th>
+                                <th>Instansi Pengirim</th>
+                                <th>Tujuan</th>
+                                <th>Perihal</th>
+                                <th>File PDF</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body_tabel">
+                            <!-- Data akan dimuat otomatis oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
-    <div class="form-group">
-        <label for="tanggal_surat">Tanggal Surat:</label>
-        <input type="date" id="tanggal_surat" required>
-    </div>
-
-    <div class="form-group">
-        <label for="pengirim">Instansi Pengirim:</label>
-        <input type="text" id="pengirim" required>
-    </div>
-
-    <!-- BAGIAN BARU: Kolom Input Tujuan -->
-    <div class="form-group">
-        <label for="tujuan">Tujuan:</label>
-        <input type="text" id="tujuan" required>
-    </div>
-
-    <div class="form-group">
-        <label for="perihal">Perihal:</label>
-        <input type="text" id="perihal" required>
-    </div>
-
-    <div class="form-group">
-        <label for="file_surat">Scan File Surat (Format PDF):</label>
-        <input type="file" id="file_surat" accept=".pdf">
-        <small id="keterangan_file_edit" style="color: green; display: none;">*Biarkan kosong jika tidak ingin mengubah file PDF sebelumnya.</small>
-    </div>
-
-    <div>
-        <button id="btn_simpan" onclick="simpanSurat()">Simpan Data Surat</button>
-        <button id="btn_batal_edit" onclick="batalEdit()">Batal Edit</button>
-    </div>
-    
-    <div id="pesan"></div>
-
-    <hr style="margin-top: 30px; margin-bottom: 30px;">
-
-    <h2>Daftar & Laporan Surat Masuk</h2>
-
-    <div class="action-panel">
-        <input type="text" id="inputPencarian" placeholder="Cari nomor surat atau pengirim..." onkeyup="tampilkanSurat()">
-        <button class="btn-excel" onclick="unduhLaporanExcel()">Unduh Laporan (Excel)</button>
-        <button class="btn-pdf" onclick="unduhLaporanPDF()">Unduh Laporan (PDF)</button>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Nomor Surat</th>
-                <th>Tanggal</th>
-                <th>Pengirim</th>
-                <!-- BAGIAN BARU: Header Tabel Tujuan -->
-                <th>Tujuan</th>
-                <th>Perihal</th>
-                <th>File PDF</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="body_tabel">
-            <!-- Data akan muncul di sini otomatis -->
-        </tbody>
-    </table>
+    <!-- Script Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // --- 1. KONEKSI SUPABASE ---
@@ -131,7 +138,7 @@
             const nomorSurat = document.getElementById('nomor_surat').value;
             const tanggalSurat = document.getElementById('tanggal_surat').value;
             const pengirimSurat = document.getElementById('pengirim').value;
-            const tujuanSurat = document.getElementById('tujuan').value; // Mengambil nilai Tujuan
+            const tujuanSurat = document.getElementById('tujuan').value;
             const perihalSurat = document.getElementById('perihal').value;
             const inputFile = document.getElementById('file_surat');
 
@@ -140,8 +147,9 @@
                 return;
             }
 
-            document.getElementById('pesan').style.color = '#004d99';
-            document.getElementById('pesan').innerText = "Sedang memproses dan menyimpan data...";
+            const pesanEl = document.getElementById('pesan');
+            pesanEl.className = "mt-3 fw-bold text-primary";
+            pesanEl.innerText = "Sedang memproses dan menyimpan data...";
 
             let filePath = null;
 
@@ -158,12 +166,11 @@
                 if (uploadError) {
                     console.error("Gagal upload file:", uploadError);
                     alert("Gagal mengunggah file PDF!");
-                    document.getElementById('pesan').innerText = "";
+                    pesanEl.innerText = "";
                     return;
                 }
             }
 
-            // Memasukkan data tujuan ke dalam paket data
             let dataYangDisimpan = { 
                 nomor_surat: nomorSurat, 
                 tanggal_surat: tanggalSurat, 
@@ -193,11 +200,11 @@
 
             if (dbError) {
                 console.error("Ada masalah database:", dbError);
-                document.getElementById('pesan').style.color = 'red';
-                document.getElementById('pesan').innerText = "Gagal menyimpan data ke database!";
+                pesanEl.className = "mt-3 fw-bold text-danger";
+                pesanEl.innerText = "Gagal menyimpan data ke database!";
             } else {
-                document.getElementById('pesan').style.color = 'green';
-                document.getElementById('pesan').innerText = editId ? "Data surat berhasil diperbarui!" : "Surat baru berhasil disimpan!";
+                pesanEl.className = "mt-3 fw-bold text-success";
+                pesanEl.innerText = editId ? "Data surat berhasil diperbarui!" : "Surat baru berhasil disimpan!";
                 
                 batalEdit();
                 tampilkanSurat();
@@ -213,7 +220,6 @@
                 .select('*')
                 .order('dibuat_pada', { ascending: false });
 
-            // Memungkinkan pencarian berdasarkan Tujuan juga
             if (keyword) {
                 query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%`);
             }
@@ -231,33 +237,32 @@
             tbody.innerHTML = ''; 
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Tidak ada data surat yang ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-3 text-muted">Tidak ada data surat yang ditemukan.</td></tr>`;
                 return;
             }
 
             data.forEach((surat, index) => {
-                let tombolFile = "Tidak ada file";
+                let tombolFile = '<span class="text-muted small">Tidak ada file</span>';
                 if (surat.file_url) {
                     const { data: publicURLData } = supabaseClient.storage
                         .from('berkas_surat')
                         .getPublicUrl(surat.file_url);
 
-                    tombolFile = `<a href="${publicURLData.publicUrl}" target="_blank" class="btn-download">Buka PDF</a>`;
+                    tombolFile = `<a href="${publicURLData.publicUrl}" target="_blank" class="btn btn-success btn-sm">Buka PDF</a>`;
                 }
 
-                // Menambahkan sel tabel (td) untuk Tujuan
                 const baris = `
                     <tr>
-                        <td>${index + 1}</td>
+                        <td class="text-center">${index + 1}</td>
                         <td>${surat.nomor_surat}</td>
                         <td>${surat.tanggal_surat}</td>
                         <td>${surat.pengirim}</td>
                         <td>${surat.tujuan || '-'}</td>
                         <td>${surat.perihal}</td>
-                        <td>${tombolFile}</td>
-                        <td>
-                            <button class="btn-edit" onclick="editSurat('${surat.id}')">Edit</button>
-                            <button class="btn-hapus" onclick="hapusSurat('${surat.id}', '${surat.file_url || ''}')">Hapus</button>
+                        <td class="text-center">${tombolFile}</td>
+                        <td class="text-center">
+                            <button class="btn btn-warning btn-sm mb-1" onclick="editSurat('${surat.id}')">Edit</button>
+                            <button class="btn btn-danger btn-sm mb-1" onclick="hapusSurat('${surat.id}', '${surat.file_url || ''}')">Hapus</button>
                         </td>
                     </tr>
                 `;
@@ -274,12 +279,15 @@
                 document.getElementById('nomor_surat').value = surat.nomor_surat;
                 document.getElementById('tanggal_surat').value = surat.tanggal_surat;
                 document.getElementById('pengirim').value = surat.pengirim;
-                document.getElementById('tujuan').value = surat.tujuan || ''; // Mengisi nilai form Tujuan
+                document.getElementById('tujuan').value = surat.tujuan || '';
                 document.getElementById('perihal').value = surat.perihal;
                 
-                document.getElementById('btn_simpan').innerText = "Perbarui Data Surat";
-                document.getElementById('btn_batal_edit').style.display = "inline-block";
-                document.getElementById('keterangan_file_edit').style.display = "block";
+                const btnSimpan = document.getElementById('btn_simpan');
+                btnSimpan.innerText = "Perbarui Data Surat";
+                btnSimpan.className = "btn btn-warning";
+                
+                document.getElementById('btn_batal_edit').classList.remove('d-none');
+                document.getElementById('keterangan_file_edit').classList.remove('d-none');
                 document.getElementById('pesan').innerText = "";
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -292,13 +300,16 @@
             document.getElementById('nomor_surat').value = '';
             document.getElementById('tanggal_surat').value = '';
             document.getElementById('pengirim').value = '';
-            document.getElementById('tujuan').value = ''; // Mengosongkan form Tujuan
+            document.getElementById('tujuan').value = '';
             document.getElementById('perihal').value = '';
             document.getElementById('file_surat').value = '';
 
-            document.getElementById('btn_simpan').innerText = "Simpan Data Surat";
-            document.getElementById('btn_batal_edit').style.display = "none";
-            document.getElementById('keterangan_file_edit').style.display = "none";
+            const btnSimpan = document.getElementById('btn_simpan');
+            btnSimpan.innerText = "Simpan Data Surat";
+            btnSimpan.className = "btn btn-primary";
+
+            document.getElementById('btn_batal_edit').classList.add('d-none');
+            document.getElementById('keterangan_file_edit').classList.add('d-none');
         }
 
         // --- 6. FUNGSI MENGHAPUS SURAT ---
@@ -330,7 +341,7 @@
                     "Nomor Surat": surat.nomor_surat, 
                     "Tanggal Surat": surat.tanggal_surat, 
                     "Instansi Pengirim": surat.pengirim, 
-                    "Tujuan": surat.tujuan, // Ditambahkan ke Excel
+                    "Tujuan": surat.tujuan, 
                     "Perihal": surat.perihal 
                 };
             });
@@ -350,7 +361,6 @@
             doc.setFontSize(11);
             doc.text("Dicetak pada: " + new Date().toLocaleDateString('id-ID'), 14, 28);
 
-            // Menambahkan kolom Tujuan ke laporan PDF
             const namaKolom = [['No', 'Nomor Surat', 'Tanggal', 'Instansi Pengirim', 'Tujuan', 'Perihal']];
             const barisData = dataSuratTerakhir.map((surat, index) => [ 
                 index + 1, 
