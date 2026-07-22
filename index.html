@@ -94,11 +94,10 @@
                     </div>
                 </div>
 
-                <!-- BARIS 2: Pengirim (Dropdown) dan Tujuan -->
+                <!-- BARIS 2: Pengirim dan Tujuan -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="pengirim" class="form-label fw-bold">Pengirim:</label>
-                        <!-- DIUBAH MENJADI DROPDOWN DENGAN DAFTAR PILIHAN -->
                         <select id="pengirim" class="form-select" required>
                             <option value="" disabled selected>-- Pilih Pengirim --</option>
                             <option value="Instansi Luar">Instansi Luar</option>
@@ -181,19 +180,19 @@
                     </div>
                 </div>
 
-                <!-- Tabel Data Responsif -->
+                <!-- Tabel Data Responsif dengan Kelas Perataan Rapi -->
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped table-hover align-middle">
-                        <thead class="table-primary text-center">
+                        <thead class="table-primary text-center align-middle">
                             <tr>
-                                <th>No</th>
-                                <th>Jenis Surat</th>
-                                <th>Nomor Surat</th>
-                                <th>Tanggal Diterima</th>
-                                <th>Pengirim</th>
-                                <th>Tujuan</th>
-                                <th>Perihal</th>
-                                <th>Aksi</th>
+                                <th style="width: 5%;">No</th>
+                                <th style="width: 15%;">Jenis Surat</th>
+                                <th style="width: 15%;">Nomor Surat</th>
+                                <th style="width: 12%;">Tanggal Diterima</th>
+                                <th style="width: 15%;">Pengirim</th>
+                                <th style="width: 13%;">Tujuan</th>
+                                <th style="width: 15%;">Perihal</th>
+                                <th style="width: 10%;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="body_tabel">
@@ -348,13 +347,13 @@
                         <td class="text-center">${index + 1}</td>
                         <td>${surat.jenis_surat || '-'}</td>
                         <td>${surat.nomor_surat}</td>
-                        <td>${surat.tanggal_diterima || '-'}</td>
+                        <td class="text-center">${surat.tanggal_diterima || '-'}</td>
                         <td>${surat.pengirim}</td>
                         <td>${surat.tujuan || '-'}</td>
                         <td>${surat.perihal}</td>
                         <td class="text-center">
-                            <button class="btn btn-warning btn-sm mb-1" onclick="editSurat('${surat.id}')">Edit</button>
-                            <button class="btn btn-danger btn-sm mb-1" onclick="hapusSurat('${surat.id}')">Hapus</button>
+                            <button class="btn btn-warning btn-sm mb-1 w-100" onclick="editSurat('${surat.id}')">Edit</button>
+                            <button class="btn btn-danger btn-sm w-100" onclick="hapusSurat('${surat.id}')">Hapus</button>
                         </td>
                     </tr>
                 `;
