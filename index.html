@@ -626,36 +626,35 @@
         let dataMasukTerakhir = [];
         let dataKeluarTerakhir = [];
 
-        // --- NAVIGASI MENU ---
-        function gantiMenu(menu) {
+        // --- NAVIGASI MENU DENGAN PENYIMPANAN LOCALSTORAGE ---
+        function gantiMenu(menu, simpanKeStorage = true) {
             const sectionMasuk = document.getElementById('section_surat_masuk');
             const sectionKeluar = document.getElementById('section_surat_keluar');
             const btnMasuk = document.getElementById('btn_menu_masuk');
             const btnKeluar = document.getElementById('btn_menu_keluar');
 
             if (menu === 'masuk') {
-                // Tampilkan section surat masuk, sembunyikan surat keluar
                 sectionMasuk.classList.remove('d-none');
                 sectionKeluar.classList.add('d-none');
         
-                // Aktifkan tombol surat masuk dengan background biru
                 btnMasuk.classList.add('active', 'bg-primary');
                 btnMasuk.classList.remove('bg-success');
-        
-                // Nonaktifkan status aktif dan bersihkan background dari tombol surat keluar
                 btnKeluar.classList.remove('active', 'bg-success', 'bg-primary');
         
+                if (simpanKeStorage) {
+                    localStorage.setItem('menuAktif', 'masuk');
+                }
             } else if (menu === 'keluar') {
-                // Tampilkan section surat keluar, sembunyikan surat masuk
                 sectionMasuk.classList.add('d-none');
                 sectionKeluar.classList.remove('d-none');
         
-                // Aktifkan tombol surat keluar TANPA background hijau (hanya class 'active')
                 btnKeluar.classList.add('active');
                 btnKeluar.classList.remove('bg-success', 'bg-primary');
-        
-                // Nonaktifkan status aktif dan bersihkan background dari tombol surat masuk
                 btnMasuk.classList.remove('active', 'bg-primary', 'bg-success');
+        
+                if (simpanKeStorage) {
+                    localStorage.setItem('menuAktif', 'keluar');
+                }
             }
         }
 
@@ -960,10 +959,16 @@
             doc.save(`Laporan_Surat_${tipe === 'masuk' ? 'Masuk' : 'Keluar'}.pdf`);
         }
 
-        // Inisialisasi awal saat halaman dibuka
+        // --- INISIALISASI AWAL SAAT HALAMAN DIBUKA ---
         aturTanggalSekarang();
         tampilkanSurat('masuk');
         tampilkanSurat('keluar');
+
+        // Cek apakah ada menu yang tersimpan sebelumnya di browser
+        const menuTersimpan = localStorage.getItem('menuAktif');
+        if (menuTersimpan) {
+            gantiMenu(menuTersimpan, false); // Buka menu terakhir tanpa menimpa storage
+        }
     </script>
 </body>
 </html>
