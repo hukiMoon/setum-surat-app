@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Penerimaan Surat - Setum Polri</title>
     
-    <!-- Menambahkan library Supabase -->
+    <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- BAGIAN BARU: Menambahkan library SheetJS untuk membuat file Excel -->
+    <!-- Library SheetJS (Excel) -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <!-- BAGIAN BARU: Library jsPDF dan jsPDF-AutoTable (PDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; max-width: 850px; margin: auto; }
@@ -27,10 +31,14 @@
         .btn-hapus:hover { background-color: #990000; }
         .btn-download { background-color: #008000; padding: 5px 10px; font-size: 12px; color: white; text-decoration: none; display: inline-block; }
         .btn-download:hover { background-color: #006600; }
+        
+        /* Gaya panel aksi dan tombol PDF */
         .action-panel { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
         .action-panel input { flex: 1; padding: 8px; min-width: 200px; }
         .btn-excel { background-color: #2e7d32; }
         .btn-excel:hover { background-color: #1b5e20; }
+        .btn-pdf { background-color: #d32f2f; }
+        .btn-pdf:hover { background-color: #b71c1c; }
     </style>
 </head>
 <body>
@@ -69,9 +77,11 @@
 
     <h2>Daftar & Laporan Surat Masuk</h2>
 
+    <!-- BAGIAN BARU: Menambahkan tombol Unduh PDF di sebelah Excel -->
     <div class="action-panel">
         <input type="text" id="inputPencarian" placeholder="Cari nomor surat atau pengirim..." onkeyup="tampilkanSurat()">
         <button class="btn-excel" onclick="unduhLaporanExcel()">Unduh Laporan (Excel)</button>
+        <button class="btn-pdf" onclick="unduhLaporanPDF()">Unduh Laporan (PDF)</button>
     </div>
 
     <table>
@@ -247,14 +257,13 @@
             }
         }
 
-        // --- 5. FUNGSI BARU: UNDUH LAPORAN EXCEL (.xlsx) ---
+        // --- 5. FUNGSI UNDUH EXCEL ---
         function unduhLaporanExcel() {
             if (dataSuratTerakhir.length === 0) {
                 alert("Tidak ada data untuk diunduh!");
                 return;
             }
 
-            // A. Menyiapkan data yang rapi khusus untuk Excel
             const dataUntukExcel = dataSuratTerakhir.map((surat, index) => {
                 return {
                     "No": index + 1,
@@ -265,15 +274,54 @@
                 };
             });
 
-            // B. Membuat lembar kerja (worksheet) baru dari data di atas
             const worksheet = XLSX.utils.json_to_sheet(dataUntukExcel);
-
-            // C. Membuat buku kerja (workbook) dan memasukkan lembar kerja ke dalamnya
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Surat Masuk");
-
-            // D. Menyimpan dan mengunduh file Excel secara otomatis
             XLSX.writeFile(workbook, "Laporan_Surat_Masuk.xlsx");
+        }
+
+        // --- 6. BAGIAN BARU: FUNGSI UNDUH PDF ---
+        function unduhLaporanPDF() {
+            if (dataSuratTerakhir.length === 0) {
+                alert("Tidak ada data untuk diunduh!");
+                return;
+            }
+
+            // Memanggil library jsPDF
+            const { jsPDF } = window.jspdf;
+            
+            // Membuat dokumen PDF baru ('l' artinya Landscape/Mendatar, ukuran A4)
+            const doc = new jsPDF('l', 'mm', 'a4'); 
+
+            // Menambahkan Teks Judul di atas dokumen
+            doc.setFontSize(16);
+            doc.text("Laporan Surat Masuk - Setum Polri", 14, 20); // (Teks, posisi X, posisi Y)
+            
+            // Menambahkan tanggal cetak
+            doc.setFontSize(11);
+            doc.text("Dicetak pada: " + new Date().toLocaleDateString('id-ID'), 14, 28);
+
+            // Menyiapkan Kerangka Data untuk Tabel PDF
+            const namaKolom = [['No', 'Nomor Surat', 'Tanggal', 'Instansi Pengirim', 'Perihal']];
+            const barisData = dataSuratTerakhir.map((surat, index) => [
+                index + 1,
+                surat.nomor_surat,
+                surat.tanggal_surat,
+                surat.pengirim,
+                surat.perihal
+            ]);
+
+            // Menggambar tabel di dalam PDF menggunakan autoTable
+            doc.autoTable({
+                startY: 35, // Jarak mulai tabel dari atas dokumen
+                head: namaKolom,
+                body: barisData,
+                theme: 'grid', // Membuat tabel memiliki garis kotak (grid)
+                headStyles: { fillColor: [0, 77, 153] } // Warna latar belakang judul tabel (Biru gelap sesuai tema web)
+            });
+
+            // Menyimpan dan memicu unduhan file PDF
+            doc.save("Laporan_Surat_Masuk.pdf");
         }
 
         // Jalankan saat halaman dibuka
