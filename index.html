@@ -15,12 +15,14 @@
         button:hover { background-color: #003366; }
         #pesan { margin-top: 15px; font-weight: bold; }
         
-        /* Gaya tambahan untuk tabel dan tombol hapus */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        /* Gaya untuk tabel, tombol hapus, dan kotak pencarian */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #004d99; color: white; }
         .btn-hapus { background-color: #cc0000; padding: 5px 10px; font-size: 12px; }
         .btn-hapus:hover { background-color: #990000; }
+        .search-box { margin-bottom: 15px; display: flex; gap: 10px; }
+        .search-box input { flex: 1; padding: 8px; }
     </style>
 </head>
 <body>
@@ -53,6 +55,12 @@
     <hr style="margin-top: 30px; margin-bottom: 30px;">
 
     <h2>Daftar Surat Masuk</h2>
+
+    <!-- BAGIAN BARU: Kotak Pencarian -->
+    <div class="search-box">
+        <input type="text" id="inputPencarian" placeholder="Cari berdasarkan nomor surat atau pengirim..." onkeyup="tampilkanSurat()">
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -61,7 +69,7 @@
                 <th>Tanggal</th>
                 <th>Pengirim</th>
                 <th>Perihal</th>
-                <th>Aksi</th> <!-- Kolom baru untuk tombol hapus -->
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody id="body_tabel">
@@ -71,7 +79,6 @@
 
     <script>
         // --- 1. KONEKSI SUPABASE ---
-        // (Masukkan URL dan Key Supabase milikmu di sini)
         const SUPABASE_URL = 'https://ttoavlqcwlvkykkmrlap.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0b2F2bHFjd2x2a3lra21ybGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NjQ0MzAsImV4cCI6MjEwMDI0MDQzMH0.vGInPpN5mnG2nMS2HiZYdKvhmMOMIuus4M-qSAYlXOI';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -108,17 +115,26 @@
                 document.getElementById('pengirim').value = '';
                 document.getElementById('perihal').value = '';
 
-                // Segarkan tabel
                 tampilkanSurat();
             }
         }
 
-        // --- 3. FUNGSI MENAMPILKAN DATA SURAT (Dengan Tombol Hapus) ---
+        // --- 3. FUNGSI MENAMPILKAN DAN MENCARI SURAT ---
         async function tampilkanSurat() {
-            const { data, error } = await supabaseClient
+            // Mengambil nilai teks yang sedang diketik di kotak pencarian
+            const keyword = document.getElementById('inputPencarian').value;
+
+            let query = supabaseClient
                 .from('surat_masuk')
                 .select('*')
                 .order('dibuat_pada', { ascending: false });
+
+            // Jika kotak pencarian diisi, filter data berdasarkan nomor_surat atau pengirim
+            if (keyword) {
+                query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%`);
+            }
+
+            const { data, error } = await query;
 
             if (error) {
                 console.error("Gagal mengambil data:", error);
@@ -127,6 +143,11 @@
 
             const tbody = document.getElementById('body_tabel');
             tbody.innerHTML = ''; 
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Tidak ada data surat yang ditemukan.</td></tr>`;
+                return;
+            }
 
             data.forEach((surat, index) => {
                 const baris = `
@@ -145,13 +166,11 @@
             });
         }
 
-        // --- 4. FUNGSI BARU: MENGHAPUS SURAT ---
+        // --- 4. FUNGSI MENGHAPUS SURAT ---
         async function hapusSurat(idSurat) {
-            // Memberikan konfirmasi sebelum data benar-benar dihapus
             const konfirmasi = confirm("Apakah Anda yakin ingin menghapus data surat ini?");
             if (!konfirmasi) return;
 
-            // Perintah ke Supabase untuk menghapus data berdasarkan kolom 'id'
             const { error } = await supabaseClient
                 .from('surat_masuk')
                 .delete()
@@ -162,7 +181,6 @@
                 alert("Gagal menghapus data surat!");
             } else {
                 alert("Surat berhasil dihapus!");
-                // Segarkan kembali tabel setelah data terhapus
                 tampilkanSurat();
             }
         }
