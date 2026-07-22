@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penerimaan Surat - Setum Polri</title>
+    <!-- Menambahkan library Supabase dari CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], input[type="date"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; background-color: #004d99; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #003366; }
+        #pesan { margin-top: 15px; font-weight: bold; }
+        
+        /* Gaya tambahan untuk tabel */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #004d99; color: white; }
+    </style>
+</head>
+<body>
+
+    <h2>Formulir Penerimaan Surat</h2>
+    
+    <div class="form-group">
+        <label for="nomor_surat">Nomor Surat:</label>
+        <input type="text" id="nomor_surat" required>
+    </div>
+
+    <div class="form-group">
+        <label for="tanggal_surat">Tanggal Surat:</label>
+        <input type="date" id="tanggal_surat" required>
+    </div>
+
+    <div class="form-group">
+        <label for="pengirim">Instansi Pengirim:</label>
+        <input type="text" id="pengirim" required>
+    </div>
+
+    <div class="form-group">
+        <label for="perihal">Perihal:</label>
+        <input type="text" id="perihal" required>
+    </div>
+
+    <button onclick="simpanSurat()">Simpan Data Surat</button>
+    <div id="pesan"></div>
+
+    <hr style="margin-top: 30px; margin-bottom: 30px;">
+
+    <!-- BAGIAN BARU: Tempat untuk menampilkan daftar surat -->
+    <h2>Daftar Surat Masuk</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nomor Surat</th>
+                <th>Tanggal</th>
+                <th>Pengirim</th>
+                <th>Perihal</th>
+            </tr>
+        </thead>
+        <tbody id="body_tabel">
+            <!-- Data dari database akan muncul di sini secara otomatis -->
+        </tbody>
+    </table>
+
+    <script>
+        // --- 1. KONEKSI SUPABASE ---
+        // (JANGAN LUPA ISI KEMBALI DENGAN URL DAN KEY MILIKMU)
+        const SUPABASE_URL = 'https://ttoavlqcwlvkykkmrlap.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0b2F2bHFjd2x2a3lra21ybGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NjQ0MzAsImV4cCI6MjEwMDI0MDQzMH0.vGInPpN5mnG2nMS2HiZYdKvhmMOMIuus4M-qSAYlXOI';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. FUNGSI MENYIMPAN SURAT (Sudah berhasil sebelumnya) ---
+        async function simpanSurat() {
+            const nomorSurat = document.getElementById('nomor_surat').value;
+            const tanggalSurat = document.getElementById('tanggal_surat').value;
+            const pengirimSurat = document.getElementById('pengirim').value;
+            const perihalSurat = document.getElementById('perihal').value;
+
+            if(!nomorSurat || !tanggalSurat || !pengirimSurat || !perihalSurat) {
+                alert("Mohon isi semua data surat!");
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('surat_masuk')
+                .insert([
+                    { nomor_surat: nomorSurat, tanggal_surat: tanggalSurat, pengirim: pengirimSurat, perihal: perihalSurat }
+                ]);
+
+            if (error) {
+                console.error("Ada masalah:", error);
+                document.getElementById('pesan').style.color = 'red';
+                document.getElementById('pesan').innerText = "Gagal menyimpan data!";
+            } else {
+                document.getElementById('pesan').style.color = 'green';
+                document.getElementById('pesan').innerText = "Surat berhasil disimpan!";
+                
+                // Kosongkan form
+                document.getElementById('nomor_surat').value = '';
+                document.getElementById('tanggal_surat').value = '';
+                document.getElementById('pengirim').value = '';
+                document.getElementById('perihal').value = '';
+
+                // BAGIAN BARU: Segarkan tabel setiap kali data baru berhasil disimpan
+                tampilkanSurat();
+            }
+        }
+
+        // --- 3. FUNGSI BARU: MENAMPILKAN DATA SURAT ---
+        async function tampilkanSurat() {
+            // Meminta data dari tabel 'surat_masuk', diurutkan dari yang terbaru
+            const { data, error } = await supabaseClient
+                .from('surat_masuk')
+                .select('*')
+                .order('dibuat_pada', { ascending: false });
+
+            if (error) {
+                console.error("Gagal mengambil data:", error);
+                return;
+            }
+
+            // Mengambil elemen tubuh tabel (tbody)
+            const tbody = document.getElementById('body_tabel');
+            tbody.innerHTML = ''; // Kosongkan dulu sebelum diisi data baru
+
+            // Looping (mengulang) untuk setiap data surat yang ditemukan
+            data.forEach((surat, index) => {
+                // Membuat baris HTML untuk setiap surat
+                const baris = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${surat.nomor_surat}</td>
+                        <td>${surat.tanggal_surat}</td>
+                        <td>${surat.pengirim}</td>
+                        <td>${surat.perihal}</td>
+                    </tr>
+                `;
+                // Menambahkan baris tersebut ke dalam tabel
+                tbody.innerHTML += baris;
+            });
+        }
+
+        // Jalankan fungsi tampilkanSurat secara otomatis saat halaman web pertama kali dibuka
+        tampilkanSurat();
+    </script>
+</body>
+</html>
