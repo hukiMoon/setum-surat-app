@@ -97,7 +97,7 @@
                 <!-- BARIS 2: Pengirim dan Tujuan -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="pengirim" class="form-label fw-bold">Pengirim:</label>
+                        <label for="pengirim" class="form-label fw-bold">Instansi Pengirim:</label>
                         <input type="text" id="pengirim" class="form-control" required>
                     </div>
 
@@ -129,7 +129,6 @@
             <div class="card-body">
                 
                 <!-- Panel Pencarian dan Tombol Ekspor -->
-                <!-- BARU: Penambahan input rentang tanggal -->
                 <div class="row g-2 mb-3 align-items-center">
                     <div class="col-md-3">
                         <input type="text" id="inputPencarian" class="form-control" placeholder="Cari teks..." onkeyup="tampilkanSurat()">
@@ -199,10 +198,38 @@
             const tujuanSurat = document.getElementById('tujuan').value;
             const perihalSurat = document.getElementById('perihal').value;
 
-            if(!jenisSurat || !nomorSurat || !tanggalDiterima || !pengirimSurat || !tujuanSurat || !perihalSurat) {
-                alert("Mohon lengkapi semua data teks, termasuk memilih Jenis Surat!");
+            // --- VALIDASI SPESIFIK SATU PER SATU ---
+            if (!jenisSurat) {
+                alert("Peringatan: Jenis Surat belum dipilih!");
+                document.getElementById('jenis_surat').focus(); // Arahkan kursor ke input ini
+                return; // Hentikan proses simpan
+            }
+            if (!nomorSurat) {
+                alert("Peringatan: Nomor Surat belum diisi!");
+                document.getElementById('nomor_surat').focus();
                 return;
             }
+            if (!tanggalDiterima) {
+                alert("Peringatan: Tanggal Diterima belum diisi!");
+                document.getElementById('tanggal_diterima').focus();
+                return;
+            }
+            if (!pengirimSurat) {
+                alert("Peringatan: Instansi Pengirim belum diisi!");
+                document.getElementById('pengirim').focus();
+                return;
+            }
+            if (!tujuanSurat) {
+                alert("Peringatan: Tujuan Surat belum diisi!");
+                document.getElementById('tujuan').focus();
+                return;
+            }
+            if (!perihalSurat) {
+                alert("Peringatan: Perihal Surat belum diisi!");
+                document.getElementById('perihal').focus();
+                return;
+            }
+            // ----------------------------------------
 
             const pesanEl = document.getElementById('pesan');
             pesanEl.className = "mt-3 fw-bold text-primary";
@@ -256,17 +283,14 @@
                 .select('*')
                 .order('dibuat_pada', { ascending: false });
 
-            // Filter teks
             if (keyword) {
                 query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%`);
             }
 
-            // BARU: Filter Tanggal Mulai (Lebih besar atau sama dengan)
             if (tanggalMulai) {
                 query = query.gte('tanggal_diterima', tanggalMulai);
             }
 
-            // BARU: Filter Tanggal Sampai (Lebih kecil atau sama dengan)
             if (tanggalSampai) {
                 query = query.lte('tanggal_diterima', tanggalSampai);
             }
