@@ -339,7 +339,7 @@
                                         <th style="width: 15%;">Pengirim</th>
                                         <th style="width: 13%;">Tujuan</th>
                                         <th style="width: 15%;">Perihal</th>
-                                        <th id="th_aksi_masuk" style="width: 10%;">Aksi</th>
+                                        <th style="width: 10%;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabel_masuk">
@@ -630,7 +630,7 @@
                                         <th style="width: 15%;">Pengirim</th>
                                         <th style="width: 13%;">Tujuan</th>
                                         <th style="width: 15%;">Perihal</th>
-                                        <th id="th_aksi_keluar" style="width: 10%;">Aksi</th>
+                                        <th style="width: 10%;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabel_keluar">
@@ -804,7 +804,6 @@
             }
         }
 
-        // Fungsi pendeteksi tombol Enter pada form login
         function cekTombolEnter(event) {
             if (event.key === 'Enter') {
                 prosesLogin();
@@ -1162,21 +1161,10 @@
             else dataKeluarTerakhir = data;
 
             const tbody = document.getElementById(`tabel_${tipe}`);
-            const thAksi = document.getElementById(`th_aksi_${tipe}`);
-            
-            const adaHakAksi = (rolePenggunaAktif === 'super_admin' || rolePenggunaAktif === 'admin' || rolePenggunaAktif === 'kasubbag');
-
-            if (adaHakAksi) {
-                if (thAksi) thAksi.classList.remove('d-none');
-            } else {
-                if (thAksi) thAksi.classList.add('d-none');
-            }
-
             tbody.innerHTML = ''; 
 
             if (data.length === 0) {
-                const jumlahKolom = adaHakAksi ? "8" : "7";
-                tbody.innerHTML = `<tr><td colspan="${jumlahKolom}" class="text-center py-3 text-muted">Tidak ada data surat yang ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-3 text-muted">Tidak ada data surat yang ditemukan.</td></tr>`;
                 document.getElementById(`info_halaman_${tipe}`).innerText = "Menampilkan 0 dari 0 data";
                 document.getElementById(`navigasi_halaman_${tipe}`).innerHTML = "";
                 return;
@@ -1185,15 +1173,10 @@
             data.forEach((surat, index) => {
                 const nomorUrut = dariIndex + index + 1;
                 
-                let htmlKolomAksi = '';
-                
-                if (adaHakAksi) {
-                    const isiTombol = `
-                        <button class="btn btn-warning btn-sm mb-1 w-100" onclick="editSurat('${tipe}', '${surat.id}')">Edit</button>
-                        <button class="btn btn-danger btn-sm w-100" onclick="hapusSurat('${tipe}', '${surat.id}')">Hapus</button>
-                    `;
-                    htmlKolomAksi = `<td class="text-center">${isiTombol}</td>`;
-                }
+                const isiTombol = `
+                    <button class="btn btn-warning btn-sm mb-1 w-100" onclick="editSurat('${tipe}', '${surat.id}')">Edit</button>
+                    <button class="btn btn-danger btn-sm w-100" onclick="hapusSurat('${tipe}', '${surat.id}')">Hapus</button>
+                `;
 
                 const baris = `
                     <tr>
@@ -1204,7 +1187,7 @@
                         <td>${surat.pengirim}</td>
                         <td>${surat.tujuan || '-'}</td>
                         <td>${surat.perihal}</td>
-                        ${htmlKolomAksi}
+                        <td class="text-center">${isiTombol}</td>
                     </tr>
                 `;
                 tbody.innerHTML += baris;
