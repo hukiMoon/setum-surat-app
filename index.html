@@ -674,14 +674,21 @@
                                 <input type="password" id="password_baru" class="form-control" placeholder="Minimal 6 karakter" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="role_baru" class="form-label fw-bold">Pilih Role / Peran:</label>
+                                <label for="role_baru" class="form-label fw-bold">Pilih Role / Jabatan:</label>
                                 <select id="role_baru" class="form-select" required>
-                                    <option value="" disabled selected>-- Pilih Role --</option>
+                                    <option value="" disabled selected>-- Pilih Role / Jabatan --</option>
+                                    <!-- Role Sistem (Opsional jika masih ingin dipertahankan) -->
                                     <option value="super_admin">Super Admin</option>
                                     <option value="admin">Admin</option>
-                                    <option value="operator_level_1">Operator Level 1</option>
-                                    <option value="operator_level_2">Operator Level 2</option>
-                                    <option value="operator_level_3">Operator Level 3</option>
+                                    <!-- Role Jabatan Struktural -->
+                                    <option value="kasatker">Kasatker</option>
+                                    <option value="karo">Karo</option>
+                                    <option value="kabag">Kabag</option>
+                                    <option value="kasubbag">Kasubbag</option>
+                                    <option value="paur_pamin">Paur/Pamin</option>
+                                    <option value="bamin_banum">Bamin/Banum</option>
+                                    <option value="taud_urtu">Taud/Urtu</option>
+                                    <option value="spri">Spri</option>
                                 </select>
                             </div>
                         </div>
@@ -750,10 +757,11 @@
                 if (profile) {
                     rolePenggunaAktif = profile.role;
                 } else {
-                    rolePenggunaAktif = 'operator_level_3';
+                    rolePenggunaAktif = 'bamin_banum'; // Nilai default jika belum diatur
                 }
 
-                if (rolePenggunaAktif === 'super_admin' || rolePenggunaAktif === 'admin') {
+                // Menambahkan 'kasubbag' ke daftar yang bisa melihat menu Manajemen User
+                if (rolePenggunaAktif === 'super_admin' || rolePenggunaAktif === 'admin' || rolePenggunaAktif === 'kasubbag') {
                     document.getElementById('li_menu_user').classList.remove('d-none');
                 } else {
                     document.getElementById('li_menu_user').classList.add('d-none');
@@ -772,7 +780,6 @@
                 document.getElementById('app_utama').classList.add('d-none');
             }
         }
-
         async function prosesLogin() {
             const email = document.getElementById('email_login').value;
             const password = document.getElementById('password_login').value;
@@ -1091,8 +1098,9 @@
             data.forEach((surat, index) => {
                 const nomorUrut = dariIndex + index + 1;
                 
+                // Menambahkan 'kasubbag' ke daftar yang bisa melihat tombol Edit & Hapus
                 let tombolAksiHTML = `<span class="text-muted small">Hanya Baca</span>`;
-                if (rolePenggunaAktif === 'super_admin' || rolePenggunaAktif === 'admin') {
+                if (rolePenggunaAktif === 'super_admin' || rolePenggunaAktif === 'admin' || rolePenggunaAktif === 'kasubbag') {
                     tombolAksiHTML = `
                         <button class="btn btn-warning btn-sm mb-1 w-100" onclick="editSurat('${tipe}', '${surat.id}')">Edit</button>
                         <button class="btn btn-danger btn-sm w-100" onclick="hapusSurat('${tipe}', '${surat.id}')">Hapus</button>
