@@ -327,18 +327,21 @@
                     <div class="card-body">
                         <div class="row g-2 mb-3 align-items-center">
                             <div class="col-md-3">
-                                <input type="text" id="cari_masuk" class="form-control" placeholder="Cari teks..." onkeyup="tampilkanSurat('masuk')">
+                                <div class="input-group">
+                                    <input type="text" id="cari_masuk" class="form-control" placeholder="Cari teks..." onkeyup="handlePencarian('masuk')">
+                                    <button class="btn btn-outline-secondary d-none" type="button" id="btn_reset_masuk" onclick="resetPencarian('masuk')">✖</button>
+                                </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white">Dari</span>
-                                    <input type="date" id="mulai_masuk" class="form-control" onchange="tampilkanSurat('masuk')">
+                                    <input type="date" id="mulai_masuk" class="form-control" onchange="handlePencarian('masuk')">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white">Sampai</span>
-                                    <input type="date" id="sampai_masuk" class="form-control" onchange="tampilkanSurat('masuk')">
+                                    <input type="date" id="sampai_masuk" class="form-control" onchange="handlePencarian('masuk')">
                                 </div>
                             </div>
                             <div class="col-md-3 text-md-end">
@@ -618,18 +621,21 @@
                     <div class="card-body">
                         <div class="row g-2 mb-3 align-items-center">
                             <div class="col-md-3">
-                                <input type="text" id="cari_keluar" class="form-control" placeholder="Cari teks..." onkeyup="tampilkanSurat('keluar')">
+                                <div class="input-group">
+                                    <input type="text" id="cari_keluar" class="form-control" placeholder="Cari teks..." onkeyup="handlePencarian('keluar')">
+                                    <button class="btn btn-outline-secondary d-none" type="button" id="btn_reset_keluar" onclick="resetPencarian('keluar')">✖</button>
+                                </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white">Dari</span>
-                                    <input type="date" id="mulai_keluar" class="form-control" onchange="tampilkanSurat('keluar')">
+                                    <input type="date" id="mulai_keluar" class="form-control" onchange="handlePencarian('keluar')">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white">Sampai</span>
-                                    <input type="date" id="sampai_keluar" class="form-control" onchange="tampilkanSurat('keluar')">
+                                    <input type="date" id="sampai_keluar" class="form-control" onchange="handlePencarian('keluar')">
                                 </div>
                             </div>
                             <div class="col-md-3 text-md-end">
@@ -773,12 +779,12 @@
         let halamanMasukAktif = 1;
         let halamanKeluarAktif = 1;
 
-        // Inisialisasi Tom Select pada elemen yang memiliki kelas searchable-select
+        // Inisialisasi Tom Select dengan mempertahankan urutan asli HTML
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('.searchable-select').forEach((el) => {
                 let instance = new TomSelect(el, {
                     create: false,
-                    sortField: false // Mengaktifkan kembali urutan asli sesuai daftar HTML
+                    sortField: false 
                 });
                 tomSelectInstances[el.id] = instance;
             });
@@ -1104,6 +1110,34 @@
             }
         }
 
+        // --- PENGELOLA PENCARIAN & RESET ---
+        function handlePencarian(tipe) {
+            const keyword = document.getElementById(`cari_${tipe}`).value;
+            const btnReset = document.getElementById(`btn_reset_${tipe}`);
+
+            // Munculkan atau sembunyikan tombol reset berdasarkan isi teks
+            if (keyword.trim() !== "") {
+                btnReset.classList.remove('d-none');
+            } else {
+                btnReset.classList.add('d-none');
+            }
+
+            tampilkanSurat(tipe);
+        }
+
+        function resetPencarian(tipe) {
+            // Kosongkan kotak teks pencarian
+            document.getElementById(`cari_${tipe}`).value = "";
+            document.getElementById(`btn_reset_${tipe}`).classList.add('d-none');
+            
+            // (Opsional) Kosongkan juga filter tanggal jika ingin ikut tereset
+            document.getElementById(`mulai_${tipe}`).value = "";
+            document.getElementById(`sampai_${tipe}`).value = "";
+
+            // Tampilkan ulang tabel secara penuh
+            tampilkanSurat(tipe);
+        }
+
         // --- SIMPAN / UPDATE SURAT (MASUK & KELUAR) ---
         async function simpanSurat(tipe) {
             const editId = document.getElementById(`edit_id_${tipe}`).value;
@@ -1335,7 +1369,6 @@
             if (surat) {
                 document.getElementById(`edit_id_${tipe}`).value = surat.id;
                 
-                // Update nilai Tom Select untuk Jenis Surat
                 if(tomSelectInstances[`jenis_surat_${tipe}`]) {
                     tomSelectInstances[`jenis_surat_${tipe}`].setValue(surat.jenis_surat || '');
                 } else {
@@ -1371,7 +1404,6 @@
                     document.getElementById(`pengirim_lain_${tipe}`).value = surat.pengirim;
                 }
 
-                // Update nilai Tom Select untuk Tujuan
                 if(tomSelectInstances[`tujuan_${tipe}`]) {
                     tomSelectInstances[`tujuan_${tipe}`].setValue(surat.tujuan || '');
                 } else {
