@@ -830,7 +830,7 @@
         }
 
         async function prosesLogin() {
-            const email = document.getElementById('email_login').value;
+            const email = document.getElementById('email_login').value.trim();
             const password = document.getElementById('password_login').value;
             const pesanEl = document.getElementById('pesan_login');
 
@@ -841,8 +841,24 @@
             }
 
             pesanEl.className = "mt-3 text-center small fw-bold text-primary";
+            pesanEl.innerText = "Memeriksa data akun...";
+
+            // 1. Cek terlebih dahulu apakah email terdaftar di tabel profiles
+            const { data: cekUser, error: errCek } = await supabaseClient
+                .from('profiles')
+                .select('email')
+                .eq('email', email)
+                .maybeSingle();
+
+            if (!cekUser) {
+                pesanEl.className = "mt-3 text-center small fw-bold text-danger";
+                pesanEl.innerText = "Email anda belum terdaftar, silakan hubungi Admin";
+                return;
+            }
+
             pesanEl.innerText = "Memproses masuk...";
 
+            // 2. Jika email terdaftar, lanjutkan proses masuk dengan password
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password,
@@ -851,7 +867,7 @@
             if (error) {
                 pesanEl.className = "mt-3 text-center small fw-bold text-danger";
                 if (error.message.includes("Invalid login credentials")) {
-                    pesanEl.innerText = "Gagal masuk: Email atau password Anda salah!";
+                    pesanEl.innerText = "Gagal masuk: Password Anda salah!";
                 } else {
                     pesanEl.innerText = "Gagal masuk: " + error.message;
                 }
