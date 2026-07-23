@@ -661,15 +661,18 @@
             <div id="section_manajemen_user" class="d-none">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0 text-dark fw-bold">Formulir Tambah User Baru</h5>
+                        <h5 class="mb-0 text-dark fw-bold" id="judul_form_user">Formulir Tambah User Baru</h5>
                     </div>
                     <div class="card-body">
+                        <!-- Input tersembunyi untuk menyimpan ID saat mode Edit -->
+                        <input type="hidden" id="edit_user_id"> 
+                        
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="email_baru" class="form-label fw-bold">Email User:</label>
                                 <input type="email" id="email_baru" class="form-control" placeholder="email@polri.go.id" required>
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-4 mb-3" id="wrapper_password_baru">
                                 <label for="password_baru" class="form-label fw-bold">Password Sementara:</label>
                                 <input type="password" id="password_baru" class="form-control" placeholder="Minimal 6 karakter" required>
                             </div>
@@ -677,10 +680,8 @@
                                 <label for="role_baru" class="form-label fw-bold">Pilih Role / Jabatan:</label>
                                 <select id="role_baru" class="form-select" required>
                                     <option value="" disabled selected>-- Pilih Role / Jabatan --</option>
-                                    <!-- Role Sistem (Opsional jika masih ingin dipertahankan) -->
                                     <option value="super_admin">Super Admin</option>
                                     <option value="admin">Admin</option>
-                                    <!-- Role Jabatan Struktural -->
                                     <option value="kasatker">Kasatker</option>
                                     <option value="karo">Karo</option>
                                     <option value="kabag">Kabag</option>
@@ -692,7 +693,12 @@
                                 </select>
                             </div>
                         </div>
-                        <button class="btn btn-dark fw-bold" onclick="tambahUserBaru()">Buat Akun User Baru</button>
+                        
+                        <!-- Tombol aksi untuk Simpan dan Batal -->
+                        <div class="d-flex gap-2">
+                            <button id="btn_simpan_user" class="btn btn-dark fw-bold" onclick="simpanUser()">Buat Akun User Baru</button>
+                            <button id="btn_batal_user" class="btn btn-secondary fw-bold d-none" onclick="batalEditUser()">Batal Edit</button>
+                        </div>
                         <div id="pesan_user" class="mt-3 fw-bold"></div>
                     </div>
                 </div>
@@ -709,6 +715,8 @@
                                         <th>No</th>
                                         <th>Email</th>
                                         <th>Role / Peran</th>
+                                        <!-- Kolom Aksi yang akan disembunyikan jika bukan Super Admin -->
+                                        <th id="kolom_aksi_user" class="d-none" style="width: 20%;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabel_user">
@@ -719,7 +727,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -823,62 +830,150 @@
             }
         }
 
-        // --- MANAJEMEN USER OLEH ADMIN ---
-        async function tambahUserBaru() {
+        // --- CRUD MANAJEMEN USER (KHUSUS SUPER ADMIN) ---
+
+        // 1. Fungsi Create & Update digabung menjadi simpanUser
+        async function simpanUser() {
+            const editId = document.getElementById('edit_user_id').value;
             const email = document.getElementById('email_baru').value;
-            const password = document.getElementById('password_baru').value;
             const role = document.getElementById('role_baru').value;
             const pesanEl = document.getElementById('pesan_user');
 
-            if (!email || !password || !role) {
-                alert("Semua kolom pada form user wajib diisi!");
-                return;
-            }
+            // --- MODE UPDATE (Hanya Role yang bisa diedit) ---
+            if (editId) {
+                pesanEl.className = "mt-3 fw-bold text-primary";
+                pesanEl.innerText = "Memperbarui role user...";
 
-            pesanEl.className = "mt-3 fw-bold text-primary";
-            pesanEl.innerText = "Membuat akun baru...";
-
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
-
-            if (error) {
-                pesanEl.className = "mt-3 fw-bold text-danger";
-                pesanEl.innerText = "Gagal membuat user: " + error.message;
-            } else if (data && data.user) {
-                const userId = data.user.id;
-                const { error: profileError } = await supabaseClient.from('profiles').insert([
-                    { id: userId, email: email, role: role }
-                ]);
-
-                if (profileError) {
+                const { error } = await supabaseClient.from('profiles').update({ role: role }).eq('id', editId);
+                
+                if (error) {
                     pesanEl.className = "mt-3 fw-bold text-danger";
-                    pesanEl.innerText = "Akun terbuat tapi gagal menyimpan role: " + profileError.message;
+                    pesanEl.innerText = "Gagal memperbarui: " + error.message;
                 } else {
                     pesanEl.className = "mt-3 fw-bold text-success";
-                    pesanEl.innerText = "Berhasil membuat user baru!";
-                    document.getElementById('email_baru').value = '';
-                    document.getElementById('password_baru').value = '';
-                    document.getElementById('role_baru').value = '';
+                    pesanEl.innerText = "Role berhasil diperbarui!";
+                    batalEditUser();
                     tampilkanDaftarUser();
+                }
+            } 
+            // --- MODE CREATE (Tambah User Baru) ---
+            else {
+                const password = document.getElementById('password_baru').value;
+                if (!email || !password || !role) {
+                    alert("Semua kolom wajib diisi untuk membuat akun baru!");
+                    return;
+                }
+
+                pesanEl.className = "mt-3 fw-bold text-primary";
+                pesanEl.innerText = "Membuat akun baru...";
+
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+                if (error) {
+                    pesanEl.className = "mt-3 fw-bold text-danger";
+                    pesanEl.innerText = "Gagal membuat user: " + error.message;
+                } else if (data && data.user) {
+                    const userId = data.user.id;
+                    const { error: profileError } = await supabaseClient.from('profiles').insert([
+                        { id: userId, email: email, role: role }
+                    ]);
+
+                    if (profileError) {
+                        pesanEl.className = "mt-3 fw-bold text-danger";
+                        pesanEl.innerText = "Gagal menyimpan role: " + profileError.message;
+                    } else {
+                        pesanEl.className = "mt-3 fw-bold text-success";
+                        pesanEl.innerText = "Berhasil membuat user baru!";
+                        batalEditUser();
+                        tampilkanDaftarUser();
+                    }
                 }
             }
         }
 
+        // 2. Fungsi untuk menampilkan data ke formulir saat tombol Edit ditekan
+        function editUser(id, email, role) {
+            document.getElementById('edit_user_id').value = id;
+            document.getElementById('email_baru').value = email;
+            document.getElementById('email_baru').disabled = true; // Kunci email agar tidak diubah
+            document.getElementById('wrapper_password_baru').classList.add('d-none'); // Sembunyikan input password
+            document.getElementById('role_baru').value = role;
+
+            document.getElementById('judul_form_user').innerText = "Edit Role User";
+            document.getElementById('btn_simpan_user').innerText = "Perbarui Role";
+            document.getElementById('btn_batal_user').classList.remove('d-none');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 3. Fungsi untuk membatalkan proses Edit
+        function batalEditUser() {
+            document.getElementById('edit_user_id').value = '';
+            document.getElementById('email_baru').value = '';
+            document.getElementById('email_baru').disabled = false;
+            document.getElementById('password_baru').value = '';
+            document.getElementById('wrapper_password_baru').classList.remove('d-none');
+            document.getElementById('role_baru').value = '';
+
+            document.getElementById('judul_form_user').innerText = "Formulir Tambah User Baru";
+            document.getElementById('btn_simpan_user').innerText = "Buat Akun User Baru";
+            document.getElementById('btn_batal_user').classList.add('d-none');
+            document.getElementById('pesan_user').innerText = "";
+        }
+
+        // 4. Fungsi Delete (Hapus) Profil User
+        async function hapusUser(id) {
+            const konfirmasi = confirm("Yakin ingin menghapus profil ini? Akses user ke sistem akan dicabut.");
+            if (!konfirmasi) return;
+
+            const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+            
+            if (error) {
+                alert("Gagal menghapus profil: " + error.message);
+            } else {
+                alert("Profil berhasil dihapus!");
+                tampilkanDaftarUser();
+            }
+        }
+
+        // 5. Fungsi Read (Tampilkan Tabel) yang diperbarui dengan hak akses Aksi
         async function tampilkanDaftarUser() {
             const { data, error } = await supabaseClient.from('profiles').select('*');
             const tbody = document.getElementById('tabel_user');
+            const kolomAksi = document.getElementById('kolom_aksi_user');
+            
             tbody.innerHTML = '';
 
+            // Hanya tampilkan Header 'Aksi' jika role adalah super_admin
+            if (rolePenggunaAktif === 'super_admin') {
+                kolomAksi.classList.remove('d-none');
+            } else {
+                kolomAksi.classList.add('d-none');
+            }
+
             if (error || !data) {
-                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-danger">Gagal memuat data user.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Gagal memuat data user.</td></tr>`;
                 return;
             }
 
             data.forEach((usr, idx) => {
+                // Siapkan tombol aksi, hanya render jika pengguna login adalah super_admin
+                let aksiHTML = '';
+                if (rolePenggunaAktif === 'super_admin') {
+                    aksiHTML = `
+                        <td class="text-center">
+                            <button class="btn btn-warning btn-sm me-1" onclick="editUser('${usr.id}', '${usr.email}', '${usr.role}')">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="hapusUser('${usr.id}')">Hapus</button>
+                        </td>
+                    `;
+                }
+
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-center">${idx + 1}</td>
                         <td>${usr.email}</td>
                         <td class="text-center"><span class="badge bg-secondary">${usr.role}</span></td>
+                        ${aksiHTML}
                     </tr>
                 `;
             });
