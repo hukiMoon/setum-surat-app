@@ -850,7 +850,11 @@
 
             if (error) {
                 pesanEl.className = "mt-3 text-center small fw-bold text-danger";
-                pesanEl.innerText = "Gagal masuk: " + error.message;
+                if (error.message.includes("Invalid login credentials")) {
+                    pesanEl.innerText = "Gagal masuk: Email atau password Anda salah!";
+                } else {
+                    pesanEl.innerText = "Gagal masuk: " + error.message;
+                }
             } else {
                 pesanEl.className = "mt-3 text-center small fw-bold text-success";
                 pesanEl.innerText = "Berhasil masuk! Memuat aplikasi...";
