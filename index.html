@@ -362,7 +362,7 @@
                                         <th style="width: 12%;">Pengirim</th>
                                         <th style="width: 13%;">Tujuan</th>
                                         <th style="width: 13%;">Perihal</th>
-                                        <th style="width: 10%;">Petugas</th> <!-- KOLOM BARU -->
+                                        <th style="width: 10%;">Petugas</th>
                                         <th style="width: 10%;">Aksi</th>
                                     </tr>
                                 </thead>
@@ -520,11 +520,6 @@
                                     <option value="Polda Papua Pegunungan">Polda Papua Pegunungan</option>
                                     <option value="Polda Papua Selatan">Polda Papua Selatan</option>
                                 </select>
-
-                                <div id="wrapper_pengirim_lain_keluar" class="d-none mt-2">
-                                    <label for="pengirim_lain_keluar" class="form-label fw-bold text-muted small">Silakan masukan pengirim disini:</label>
-                                    <input type="text" id="pengirim_lain_keluar" class="form-control" placeholder="Masukkan nama instansi luar...">
-                                </div>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -658,7 +653,7 @@
                                         <th style="width: 12%;">Pengirim</th>
                                         <th style="width: 13%;">Tujuan</th>
                                         <th style="width: 13%;">Perihal</th>
-                                        <th style="width: 10%;">Petugas</th> <!-- KOLOM BARU -->
+                                        <th style="width: 10%;">Petugas</th>
                                         <th style="width: 10%;">Aksi</th>
                                     </tr>
                                 </thead>
@@ -685,13 +680,19 @@
                         <input type="hidden" id="edit_user_id"> 
                         
                         <div class="row">
-                            <!-- 1. Email User -->
+                            <!-- 1. NAMA USER (KOLOM BARU) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="nama_baru" class="form-label fw-bold">Nama Lengkap:</label>
+                                <input type="text" id="nama_baru" class="form-control" placeholder="Masukkan nama lengkap..." required>
+                            </div>
+                            
+                            <!-- 2. Email User -->
                             <div class="col-md-6 mb-3">
                                 <label for="email_baru" class="form-label fw-bold">Email User:</label>
                                 <input type="email" id="email_baru" class="form-control" placeholder="email@polri.go.id" required>
                             </div>
                         
-                            <!-- 2. Satuan Kerja (Dipindahkan ke sini, tepat setelah Email) -->
+                            <!-- 3. Satuan Kerja -->
                             <div class="col-md-6 mb-3">
                                 <label for="satker_baru" class="form-label fw-bold">Satuan Kerja:</label>
                                 <select id="satker_baru" class="form-select searchable-select" required>
@@ -763,13 +764,13 @@
                                 </select>
                             </div>
                         
-                            <!-- 3. Password Sementara -->
+                            <!-- 4. Password Sementara -->
                             <div class="col-md-6 mb-3" id="wrapper_password_baru">
                                 <label for="password_baru" class="form-label fw-bold">Password Sementara:</label>
                                 <input type="password" id="password_baru" class="form-control" placeholder="Minimal 6 karakter" required>
                             </div>
                             
-                            <!-- 4. Pilih Role / Jabatan -->
+                            <!-- 5. Pilih Role / Jabatan -->
                             <div class="col-md-6 mb-3">
                                 <label for="role_baru" class="form-label fw-bold">Pilih Role / Jabatan:</label>
                                 <select id="role_baru" class="form-select searchable-select" required>
@@ -806,6 +807,7 @@
                                 <thead class="table-dark text-center">
                                     <tr>
                                         <th>No</th>
+                                        <th>Nama Lengkap</th> <!-- KOLOM BARU DI TABEL USER -->
                                         <th>Email</th>
                                         <th>Role / Peran</th>
                                         <th>Satuan Kerja</th>
@@ -855,7 +857,7 @@
         let dataMasukTerakhir = [];
         let dataKeluarTerakhir = [];
         let rolePenggunaAktif = '';
-        let emailPenggunaAktif = ''; // VARIABEL BARU UNTUK MENYIMPAN EMAIL PETUGAS
+        let namaPenggunaAktif = ''; // MENYIMPAN NAMA ASLI PETUGAS SAAT LOGIN
         let tomSelectInstances = {};
 
         const barisPerHalaman = 10;
@@ -868,7 +870,7 @@
                 let instance = new TomSelect(el, {
                     create: false,
                     sortField: false,
-                    maxOptions: null // Menghapus batasan jumlah maksimal opsi yang ditampilkan
+                    maxOptions: null 
                 });
                 tomSelectInstances[el.id] = instance;
             });
@@ -881,19 +883,20 @@
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('app_utama').classList.remove('d-none');
                 
-                // MENYIMPAN EMAIL USER YANG LOGIN SAAT INI
-                emailPenggunaAktif = session.user.email;
-                
+                // MENGAMBIL NAMA & ROLE DARI DATABASE PROFILES
                 const { data: profile } = await supabaseClient
                     .from('profiles')
-                    .select('role')
+                    .select('role, nama')
                     .eq('id', session.user.id)
                     .single();
 
                 if (profile) {
                     rolePenggunaAktif = profile.role;
+                    // JIKA NAMA KOSONG (USER LAMA), GUNAKAN EMAIL SEBAGAI PENGGANTI SEMENTARA
+                    namaPenggunaAktif = profile.nama || session.user.email; 
                 } else {
                     rolePenggunaAktif = 'bamin_banum'; 
+                    namaPenggunaAktif = session.user.email;
                 }
 
                 if (rolePenggunaAktif === 'super_admin' || rolePenggunaAktif === 'admin' || rolePenggunaAktif === 'kasubbag') {
@@ -980,6 +983,7 @@
         // --- CRUD MANAJEMEN USER ---
         async function simpanUser() {
             const editId = document.getElementById('edit_user_id').value;
+            const nama = document.getElementById('nama_baru').value; // MENGAMBIL NILAI NAMA
             const email = document.getElementById('email_baru').value;
             const role = document.getElementById('role_baru').value;
             const satker = document.getElementById('satker_baru').value;
@@ -989,7 +993,8 @@
                 pesanEl.className = "mt-3 fw-bold text-primary";
                 pesanEl.innerText = "Memperbarui data user...";
 
-                const { error } = await supabaseClient.from('profiles').update({ role: role, satker: satker }).eq('id', editId);
+                // UPDATE NAMA, ROLE, DAN SATKER DI DATABASE
+                const { error } = await supabaseClient.from('profiles').update({ nama: nama, role: role, satker: satker }).eq('id', editId);
                 
                 if (error) {
                     pesanEl.className = "mt-3 fw-bold text-danger";
@@ -1002,7 +1007,7 @@
                 }
             } else {
                 const password = document.getElementById('password_baru').value;
-                if (!email || !password || !role || !satker) {
+                if (!nama || !email || !password || !role || !satker) {
                     alert("Semua kolom wajib diisi untuk membuat akun baru!");
                     return;
                 }
@@ -1017,8 +1022,9 @@
                     pesanEl.innerText = "Gagal membuat user: " + error.message;
                 } else if (data && data.user) {
                     const userId = data.user.id;
+                    // MENYIMPAN NAMA BERSAMAAN DENGAN PROFIL BARU
                     const { error: profileError } = await supabaseClient.from('profiles').insert([
-                        { id: userId, email: email, role: role, satker: satker }
+                        { id: userId, nama: nama, email: email, role: role, satker: satker }
                     ]);
 
                     if (profileError) {
@@ -1034,8 +1040,9 @@
             }
         }
 
-        function editUser(id, email, role, satker) {
+        function editUser(id, nama, email, role, satker) {
             document.getElementById('edit_user_id').value = id;
+            document.getElementById('nama_baru').value = nama; // MENGISI KOLOM NAMA SAAT EDIT
             document.getElementById('email_baru').value = email;
             document.getElementById('email_baru').disabled = true;
             document.getElementById('wrapper_password_baru').classList.add('d-none');
@@ -1061,6 +1068,7 @@
 
         function batalEditUser() {
             document.getElementById('edit_user_id').value = '';
+            document.getElementById('nama_baru').value = ''; // MEMBERSIHKAN KOLOM NAMA
             document.getElementById('email_baru').value = '';
             document.getElementById('email_baru').disabled = false;
             document.getElementById('password_baru').value = '';
@@ -1114,24 +1122,27 @@
             }
 
             if (error || !data) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Gagal memuat data user.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Gagal memuat data user.</td></tr>`;
                 return;
             }
 
             data.forEach((usr, idx) => {
                 let aksiHTML = '';
                 if (rolePenggunaAktif === 'super_admin') {
+                    // MEMASUKAN NAMA KE DALAM PARAMETER FUNGSI EDIT
                     aksiHTML = `
                         <td class="text-center">
-                            <button class="btn btn-warning btn-sm me-1" onclick="editUser('${usr.id}', '${usr.email}', '${usr.role}', '${usr.satker || ''}')">Edit</button>
+                            <button class="btn btn-warning btn-sm me-1" onclick="editUser('${usr.id}', '${usr.nama || ''}', '${usr.email}', '${usr.role}', '${usr.satker || ''}')">Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="konfirmasiHapusUser('${usr.id}')">Hapus</button>
                         </td>
                     `;
                 }
 
+                // MENAMPILKAN NAMA DI TABEL PENGGUNA
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-center">${idx + 1}</td>
+                        <td class="fw-bold">${usr.nama || '-'}</td>
                         <td>${usr.email}</td>
                         <td class="text-center"><span class="badge bg-secondary">${usr.role}</span></td>
                         <td class="text-center">${usr.satker || '-'}</td>
@@ -1283,7 +1294,7 @@
             pesanEl.className = "mt-3 fw-bold text-primary";
             pesanEl.innerText = "Sedang menyimpan data...";
 
-            // DATA YANG DISIMPAN SEKARANG MENYERTAKAN EMAIL PETUGAS
+            // DATA YANG DISIMPAN MENGGUNAKAN VARIABEL NAMA LENGKAP PENGGUNA SAAT INI
             let dataYangDisimpan = { 
                 jenis_surat: jenisSurat,
                 nomor_surat: nomorSurat, 
@@ -1291,7 +1302,7 @@
                 pengirim: pengirimFinal, 
                 tujuan: tujuanSurat,
                 perihal: perihalSurat,
-                petugas: emailPenggunaAktif // BARIS BARU UNTUK MENYIMPAN PETUGAS
+                petugas: namaPenggunaAktif // MENYIMPAN NAMA ASLI PETUGAS
             };
 
             let dbError = null;
@@ -1386,7 +1397,6 @@
                     <button class="btn btn-danger btn-sm w-100" onclick="konfirmasiHapus('${tipe}', '${surat.id}')">Hapus</button>
                 `;
 
-                // BARIS TABEL SEKARANG MENAMPILKAN EMAIL PETUGAS
                 const baris = `
                     <tr>
                         <td class="text-center">${nomorUrut}</td>
@@ -1396,7 +1406,7 @@
                         <td>${surat.pengirim}</td>
                         <td>${surat.tujuan || '-'}</td>
                         <td>${surat.perihal}</td>
-                        <td><span class="badge bg-info text-dark">${surat.petugas || '-'}</span></td>
+                        <td class="text-center"><span class="badge bg-info text-dark">${surat.petugas || '-'}</span></td>
                         <td class="text-center">${isiTombol}</td>
                     </tr>
                 `;
@@ -1546,7 +1556,7 @@
             document.getElementById(`perihal_${tipe}`).value = '';
             
             const sekarang = new Date();
-            sekarang.setMinutes(sekarang.getMinutes() - measurement.getTimezoneOffset());
+            sekarang.setMinutes(sekarang.getMinutes() - sekarang.getTimezoneOffset());
             document.getElementById(`tanggal_${tipe}`).value = sekarang.toISOString().slice(0, 10);
 
             const btnSimpan = document.getElementById(`btn_simpan_${tipe}`);
@@ -1579,7 +1589,7 @@
                 "Pengirim": surat.pengirim, 
                 "Tujuan": surat.tujuan, 
                 "Perihal": surat.perihal,
-                "Petugas": surat.petugas || '-' // DATA PETUGAS DI EXCEL
+                "Petugas": surat.petugas || '-'
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(dataUntukExcel);
@@ -1627,7 +1637,6 @@
             doc.setFontSize(11);
             doc.text("Dicetak pada: " + new Date().toLocaleDateString('id-ID'), 14, 28);
 
-            // DATA PETUGAS DI PDF
             const namaKolom = [['No', 'Jenis Surat', 'Nomor Surat', 'Tanggal & Jam', 'Pengirim', 'Tujuan', 'Perihal', 'Petugas']];
             const barisData = data.map((surat, index) => [ 
                 index + 1, 
