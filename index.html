@@ -992,7 +992,31 @@
                 });
                 tomSelectInstances[el.id] = instance;
             });
+            
+            // Cek status saat halaman pertama kali dimuat atau di-refresh
+            cekStatusHalamanAwal();
         });
+
+        async function cekStatusHalamanAwal() {
+            const hashValue = window.location.hash;
+            
+            // Jika ada tanda recovery di URL, simpan statusnya
+            if (hashValue && hashValue.includes('type=recovery')) {
+                sessionStorage.setItem('sedangResetPassword', 'true');
+            }
+            
+            const sedangReset = sessionStorage.getItem('sedangResetPassword');
+            
+            if (sedangReset === 'true') {
+                document.getElementById('section_login').classList.add('d-none');
+                document.getElementById('section_lupa_password').classList.add('d-none');
+                document.getElementById('app_utama').classList.add('d-none');
+                document.getElementById('section_ubah_password').classList.remove('d-none');
+                return;
+            }
+            
+            cekSesiPengguna();
+        }
 
         // --- 2. PEMANTAU AUTH STATE & SESI PENGGUNA ---
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -1012,28 +1036,18 @@
                     await supabaseClient.auth.signOut();
                     window.history.replaceState(null, null, window.location.pathname);
                     
-                    document.getElementById('section_login').classList.remove('d-none');
                     document.getElementById('section_ubah_password').classList.add('d-none');
+                    document.getElementById('section_login').classList.remove('d-none');
                     document.getElementById('pesan_login').className = "mt-3 text-center small fw-bold text-danger";
                     document.getElementById('pesan_login').innerText = "Tautan reset password sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.";
                     return;
                 }
 
-                if (hashValue && hashValue.includes('type=recovery')) {
-                    sessionStorage.setItem('sedangResetPassword', 'true');
+                if (sessionStorage.getItem('sedangResetPassword') === 'true') {
                     document.getElementById('section_login').classList.add('d-none');
                     document.getElementById('section_lupa_password').classList.add('d-none');
                     document.getElementById('app_utama').classList.add('d-none');
                     document.getElementById('section_ubah_password').classList.remove('d-none');
-                    return;
-                }
-                
-                // Jika status reset tersimpan di storage tapi token hash sudah hilang/bersih, tendang ke login
-                if (sessionStorage.getItem('sedangResetPassword') === 'true' && !hashValue.includes('type=recovery')) {
-                    sessionStorage.removeItem('sedangResetPassword');
-                    await supabaseClient.auth.signOut();
-                    document.getElementById('section_ubah_password').classList.add('d-none');
-                    document.getElementById('section_login').classList.remove('d-none');
                     return;
                 }
 
@@ -1048,11 +1062,8 @@
                 session = res.data.session;
             }
             
-            const hashValue = window.location.hash;
             const sedangReset = sessionStorage.getItem('sedangResetPassword');
-            
-            if ((hashValue && hashValue.includes('type=recovery')) || sedangReset === 'true') {
-                sessionStorage.setItem('sedangResetPassword', 'true');
+            if (sedangReset === 'true') {
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
@@ -1142,7 +1153,7 @@
                 }
             } else {
                 pesanEl.className = "mt-3 text-center small fw-bold text-success";
-                pesanEl.innerText = "Berhasil mengubah password! Mengalihkan ke aplikasi utama...";
+                pesanEl.innerText = "Berhasil mengubah password! Mengalihkan ke halaman masuk...";
                 
                 sessionStorage.removeItem('sedangResetPassword');
                 await supabaseClient.auth.signOut();
