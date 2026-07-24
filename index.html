@@ -1004,12 +1004,11 @@
             if (hashValue.includes('error=access_denied') || hashValue.includes('error_code=') || queryParams.includes('error=access_denied')) {
                 sessionStorage.removeItem('sedangResetPassword');
                 try {
-                    await supabaseClient.auth.signOut(); // Bersihkan sesi lama yang tersisa
+                    await supabaseClient.auth.signOut(); 
                 } catch (e) {}
                 
                 window.history.replaceState(null, null, window.location.pathname);
                 
-                // Pastikan langsung diarahkan ke halaman login dan tampilkan pesan error
                 document.getElementById('section_ubah_password').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
@@ -1021,10 +1020,12 @@
                 return;
             }
 
+            // Jika ada parameter recovery di URL (pertama kali klik link email), simpan ke sessionStorage
             if (hashValue && hashValue.includes('type=recovery')) {
                 sessionStorage.setItem('sedangResetPassword', 'true');
             }
             
+            // Periksa apakah status sessionStorage sedang dalam mode reset password (aman meskipun direfresh)
             const sedangReset = sessionStorage.getItem('sedangResetPassword');
             
             if (sedangReset === 'true') {
