@@ -600,11 +600,11 @@
                                     <option value="Kapolda Bali">Kapolda Bali</option>
                                     <option value="Kapolda Nusa Tenggara Barat">Kapolda Nusa Tenggara Barat</option>
                                     <option value="Kapolda Nusa Tenggara Timur">Kapolda Nusa Tenggara Timur</option>
-                                    <option value="Kapolda Kalimantan Barat">Kapolda Kalimantan Barat</option>
-                                    <option value="Kapolda Kalimantan Tengah">Kapolda Kalimantan Tengah</option>
-                                    <option value="Kapolda Kalimantan Selatan">Kapolda Kalimantan Selatan</option>
-                                    <option value="Kapolda Kalimantan Timur">Kapolda Kalimantan Timur</option>
-                                    <option value="Kapolda Kalimantan Utara">Kapolda Kalimantan Utara</option>
+                                    <option value="Polda Kalimantan Barat">Polda Kalimantan Barat</option>
+                                    <option value="Polda Kalimantan Tengah">Polda Kalimantan Tengah</option>
+                                    <option value="Polda Kalimantan Selatan">Polda Kalimantan Selatan</option>
+                                    <option value="Polda Kalimantan Timur">Polda Kalimantan Timur</option>
+                                    <option value="Polda Kalimantan Utara">Polda Kalimantan Utara</option>
                                     <option value="Polda Sulawesi Utara">Polda Sulawesi Utara</option>
                                     <option value="Polda Gorontalo">Polda Gorontalo</option>
                                     <option value="Polda Sulawesi Tengah">Polda Sulawesi Tengah</option>
@@ -1099,8 +1099,8 @@
             const editId = document.getElementById('edit_user_id').value;
             const nama = document.getElementById('nama_baru').value; 
             const pangkat = document.getElementById('pangkat_baru').value; 
-            const email = document.getElementById('email_baru').value.toLowerCase(); // Diubah jadi huruf kecil
-            const role = document.getElementById('role_baru').value;
+            const email = document.getElementById('email_baru').value.toLowerCase();
+            const role = document.getElementById('role_baru').value.toLowerCase(); // Disimpan dalam huruf kecil
             const satker = document.getElementById('satker_baru').value;
             const pesanEl = document.getElementById('pesan_user');
 
@@ -1168,9 +1168,9 @@
             document.getElementById('wrapper_password_baru').classList.add('d-none');
             
             if(tomSelectInstances['role_baru']) {
-                tomSelectInstances['role_baru'].setValue(role);
+                tomSelectInstances['role_baru'].setValue(role ? role.toLowerCase() : '');
             } else {
-                document.getElementById('role_baru').value = role;
+                document.getElementById('role_baru').value = role ? role.toLowerCase() : '';
             }
 
             if(tomSelectInstances['satker_baru']) {
@@ -1261,13 +1261,14 @@
                 }
 
                 const pangkatNama = (usr.pangkat ? usr.pangkat + ' ' : '') + (usr.nama || '-');
+                const roleFormatted = usr.role ? usr.role.toLowerCase() : '-';
 
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-center">${idx + 1}</td>
                         <td class="fw-bold text-uppercase">${pangkatNama}</td>
                         <td class="text-lowercase">${usr.email}</td>
-                        <td class="text-center"><span class="badge bg-secondary text-uppercase">${usr.role}</span></td>
+                        <td class="text-center"><span class="badge bg-secondary text-lowercase">${roleFormatted}</span></td>
                         <td class="text-center text-uppercase">${usr.satker || '-'}</td>
                         ${aksiHTML}
                     </tr>
