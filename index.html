@@ -1000,17 +1000,14 @@
             const hashValue = window.location.hash;
             const queryParams = window.location.search;
             
-            // Periksa jika ada indikator error atau token kedaluwarsa di URL
+            // Deteksi error atau token kedaluwarsa secara aman tanpa memicu crash
             if (hashValue.includes('error=access_denied') || hashValue.includes('error_code=') || queryParams.includes('error=access_denied')) {
                 sessionStorage.removeItem('sedangResetPassword');
-                try {
-                    await supabaseClient.auth.signOut();
-                } catch (e) {
-                    // Abaikan jika error saat signOut
-                }
                 window.history.replaceState(null, null, window.location.pathname);
                 
                 document.getElementById('section_ubah_password').classList.add('d-none');
+                document.getElementById('section_lupa_password').classList.add('d-none');
+                document.getElementById('app_utama').classList.add('d-none');
                 document.getElementById('section_login').classList.remove('d-none');
                 
                 const pesanLogin = document.getElementById('pesan_login');
@@ -1043,12 +1040,11 @@
 
             if (hashValue.includes('error=access_denied') || hashValue.includes('error_code=') || queryParams.includes('error=access_denied')) {
                 sessionStorage.removeItem('sedangResetPassword');
-                try {
-                    await supabaseClient.auth.signOut();
-                } catch (e) {}
                 window.history.replaceState(null, null, window.location.pathname);
                 
                 document.getElementById('section_ubah_password').classList.add('d-none');
+                document.getElementById('section_lupa_password').classList.add('d-none');
+                document.getElementById('app_utama').classList.add('d-none');
                 document.getElementById('section_login').classList.remove('d-none');
                 
                 const pesanLogin = document.getElementById('pesan_login');
@@ -1178,9 +1174,7 @@
                 pesanEl.innerText = "Berhasil mengubah password! Mengalihkan ke halaman masuk...";
                 
                 sessionStorage.removeItem('sedangResetPassword');
-                try {
-                    await supabaseClient.auth.signOut();
-                } catch (e) {}
+                await supabaseClient.auth.signOut();
                 
                 setTimeout(() => {
                     window.history.replaceState(null, null, window.location.pathname);
@@ -1194,9 +1188,7 @@
 
         async function batalDanKeLogin() {
             sessionStorage.removeItem('sedangResetPassword');
-            try {
-                await supabaseClient.auth.signOut();
-            } catch (e) {}
+            await supabaseClient.auth.signOut();
             window.history.replaceState(null, null, window.location.pathname);
             document.getElementById('section_ubah_password').classList.add('d-none');
             document.getElementById('section_login').classList.remove('d-none');
