@@ -98,7 +98,6 @@
                                 <label for="jenis_surat_masuk" class="form-label fw-bold">Jenis Surat:</label>
                                 <select id="jenis_surat_masuk" class="form-select searchable-select" required>
                                     <option value="" disabled selected>-- Pilih Jenis Surat --</option>
-                                    <!-- Instansi Luar dipindahkan ke paling atas -->
                                     <option value="Instansi Luar">Instansi Luar</option>
                                     <option value="Amanat">Amanat</option>
                                     <option value="Berita Acara">Berita Acara</option>
@@ -355,13 +354,15 @@
                             <table class="table table-bordered table-striped table-hover align-middle">
                                 <thead class="table-primary text-center align-middle">
                                     <tr>
+                                        <!-- Lebar disesuaikan agar pas 100% -->
                                         <th style="width: 5%;">No</th>
-                                        <th style="width: 15%;">Jenis Surat</th>
-                                        <th style="width: 15%;">Nomor Surat</th>
-                                        <th style="width: 12%;">Tanggal & Jam Diterima</th>
-                                        <th style="width: 15%;">Pengirim</th>
+                                        <th style="width: 12%;">Jenis Surat</th>
+                                        <th style="width: 13%;">Nomor Surat</th>
+                                        <th style="width: 12%;">Tanggal & Jam</th>
+                                        <th style="width: 12%;">Pengirim</th>
                                         <th style="width: 13%;">Tujuan</th>
-                                        <th style="width: 15%;">Perihal</th>
+                                        <th style="width: 13%;">Perihal</th>
+                                        <th style="width: 10%;">Petugas</th> <!-- KOLOM BARU -->
                                         <th style="width: 10%;">Aksi</th>
                                     </tr>
                                 </thead>
@@ -649,13 +650,15 @@
                             <table class="table table-bordered table-striped table-hover align-middle">
                                 <thead class="table-success text-center align-middle">
                                     <tr>
+                                        <!-- Lebar disesuaikan agar pas 100% -->
                                         <th style="width: 5%;">No</th>
-                                        <th style="width: 15%;">Jenis Surat</th>
-                                        <th style="width: 15%;">Nomor Surat</th>
-                                        <th style="width: 12%;">Tanggal & Jam Keluar</th>
-                                        <th style="width: 15%;">Pengirim</th>
+                                        <th style="width: 12%;">Jenis Surat</th>
+                                        <th style="width: 13%;">Nomor Surat</th>
+                                        <th style="width: 12%;">Tanggal & Jam</th>
+                                        <th style="width: 12%;">Pengirim</th>
                                         <th style="width: 13%;">Tujuan</th>
-                                        <th style="width: 15%;">Perihal</th>
+                                        <th style="width: 13%;">Perihal</th>
+                                        <th style="width: 10%;">Petugas</th> <!-- KOLOM BARU -->
                                         <th style="width: 10%;">Aksi</th>
                                     </tr>
                                 </thead>
@@ -852,6 +855,7 @@
         let dataMasukTerakhir = [];
         let dataKeluarTerakhir = [];
         let rolePenggunaAktif = '';
+        let emailPenggunaAktif = ''; // VARIABEL BARU UNTUK MENYIMPAN EMAIL PETUGAS
         let tomSelectInstances = {};
 
         const barisPerHalaman = 10;
@@ -876,6 +880,9 @@
             if (session) {
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('app_utama').classList.remove('d-none');
+                
+                // MENYIMPAN EMAIL USER YANG LOGIN SAAT INI
+                emailPenggunaAktif = session.user.email;
                 
                 const { data: profile } = await supabaseClient
                     .from('profiles')
@@ -1276,13 +1283,15 @@
             pesanEl.className = "mt-3 fw-bold text-primary";
             pesanEl.innerText = "Sedang menyimpan data...";
 
+            // DATA YANG DISIMPAN SEKARANG MENYERTAKAN EMAIL PETUGAS
             let dataYangDisimpan = { 
                 jenis_surat: jenisSurat,
                 nomor_surat: nomorSurat, 
                 tanggal_diterima: tanggalFinal, 
                 pengirim: pengirimFinal, 
                 tujuan: tujuanSurat,
-                perihal: perihalSurat
+                perihal: perihalSurat,
+                petugas: emailPenggunaAktif // BARIS BARU UNTUK MENYIMPAN PETUGAS
             };
 
             let dbError = null;
@@ -1318,7 +1327,7 @@
 
             let queryCount = supabaseClient.from(namaTabel).select('*', { count: 'exact', head: true });
             if (keyword) {
-                queryCount = queryCount.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%`);
+                queryCount = queryCount.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%,petugas.ilike.%${keyword}%`);
             }
             if (tanggalMulai) {
                 queryCount = queryCount.gte('tanggal_diterima', tanggalMulai);
@@ -1344,7 +1353,7 @@
             let query = supabaseClient.from(namaTabel).select('*').order('dibuat_pada', { ascending: false }).range(dariIndex, sampaiIndex);
 
             if (keyword) {
-                query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%`);
+                query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%,petugas.ilike.%${keyword}%`);
             }
             if (tanggalMulai) {
                 query = query.gte('tanggal_diterima', tanggalMulai);
@@ -1363,7 +1372,7 @@
             tbody.innerHTML = ''; 
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-3 text-muted">Tidak ada data surat yang ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-3 text-muted">Tidak ada data surat yang ditemukan.</td></tr>`;
                 document.getElementById(`info_halaman_${tipe}`).innerText = "Menampilkan 0 dari 0 data";
                 document.getElementById(`navigasi_halaman_${tipe}`).innerHTML = "";
                 return;
@@ -1377,6 +1386,7 @@
                     <button class="btn btn-danger btn-sm w-100" onclick="konfirmasiHapus('${tipe}', '${surat.id}')">Hapus</button>
                 `;
 
+                // BARIS TABEL SEKARANG MENAMPILKAN EMAIL PETUGAS
                 const baris = `
                     <tr>
                         <td class="text-center">${nomorUrut}</td>
@@ -1386,6 +1396,7 @@
                         <td>${surat.pengirim}</td>
                         <td>${surat.tujuan || '-'}</td>
                         <td>${surat.perihal}</td>
+                        <td><span class="badge bg-info text-dark">${surat.petugas || '-'}</span></td>
                         <td class="text-center">${isiTombol}</td>
                     </tr>
                 `;
@@ -1535,7 +1546,7 @@
             document.getElementById(`perihal_${tipe}`).value = '';
             
             const sekarang = new Date();
-            sekarang.setMinutes(sekarang.getMinutes() - sekarang.getTimezoneOffset());
+            sekarang.setMinutes(sekarang.getMinutes() - measurement.getTimezoneOffset());
             document.getElementById(`tanggal_${tipe}`).value = sekarang.toISOString().slice(0, 10);
 
             const btnSimpan = document.getElementById(`btn_simpan_${tipe}`);
@@ -1567,7 +1578,8 @@
                 "Tanggal & Jam": formatTanggalWaktu(surat.tanggal_diterima), 
                 "Pengirim": surat.pengirim, 
                 "Tujuan": surat.tujuan, 
-                "Perihal": surat.perihal 
+                "Perihal": surat.perihal,
+                "Petugas": surat.petugas || '-' // DATA PETUGAS DI EXCEL
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(dataUntukExcel);
@@ -1586,7 +1598,7 @@
             let query = supabaseClient.from(namaTabel).select('*').order('dibuat_pada', { ascending: false });
 
             if (keyword) {
-                query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%`);
+                query = query.or(`nomor_surat.ilike.%${keyword}%,pengirim.ilike.%${keyword}%,tujuan.ilike.%${keyword}%,jenis_surat.ilike.%${keyword}%,petugas.ilike.%${keyword}%`);
             }
             if (tanggalMulai) {
                 query = query.gte('tanggal_diterima', tanggalMulai);
@@ -1615,7 +1627,8 @@
             doc.setFontSize(11);
             doc.text("Dicetak pada: " + new Date().toLocaleDateString('id-ID'), 14, 28);
 
-            const namaKolom = [['No', 'Jenis Surat', 'Nomor Surat', 'Tanggal & Jam', 'Pengirim', 'Tujuan', 'Perihal']];
+            // DATA PETUGAS DI PDF
+            const namaKolom = [['No', 'Jenis Surat', 'Nomor Surat', 'Tanggal & Jam', 'Pengirim', 'Tujuan', 'Perihal', 'Petugas']];
             const barisData = data.map((surat, index) => [ 
                 index + 1, 
                 surat.jenis_surat || '-',
@@ -1623,7 +1636,8 @@
                 formatTanggalWaktu(surat.tanggal_diterima), 
                 surat.pengirim, 
                 surat.tujuan || '-', 
-                surat.perihal 
+                surat.perihal,
+                surat.petugas || '-'
             ]);
 
             doc.autoTable({ 
