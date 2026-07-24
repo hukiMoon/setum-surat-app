@@ -712,7 +712,7 @@
                                 <input type="text" id="nama_baru" class="form-control" placeholder="Masukkan nama lengkap..." required>
                             </div>
 
-                            <!-- PANGKAT (DROPDOWN BARU SEBELUM EMAIL) -->
+                            <!-- PANGKAT -->
                             <div class="col-md-6 mb-3">
                                 <label for="pangkat_baru" class="form-label fw-bold">Pangkat:</label>
                                 <select id="pangkat_baru" class="form-select searchable-select" required>
@@ -964,7 +964,6 @@
 
                 if (profile) {
                     rolePenggunaAktif = profile.role;
-                    // Menggabungkan Pangkat dan Nama untuk petugas pencatat surat
                     const pangkatUser = profile.pangkat ? profile.pangkat + ' ' : '';
                     const namaUser = profile.nama || session.user.email;
                     namaPenggunaAktif = pangkatUser + namaUser; 
@@ -1099,7 +1098,7 @@
         async function simpanUser() {
             const editId = document.getElementById('edit_user_id').value;
             const nama = document.getElementById('nama_baru').value; 
-            const pangkat = document.getElementById('pangkat_baru').value; // Mengambil nilai pangkat
+            const pangkat = document.getElementById('pangkat_baru').value; 
             const email = document.getElementById('email_baru').value;
             const role = document.getElementById('role_baru').value;
             const satker = document.getElementById('satker_baru').value;
@@ -1261,7 +1260,7 @@
                     `;
                 }
 
-                // Menampilkan Pangkat dan Nama Lengkap pada tabel user
+                // Menggabungkan kembali Pangkat dan Nama Lengkap pada satu kolom tabel user
                 const pangkatNama = (usr.pangkat ? usr.pangkat + ' ' : '') + (usr.nama || '-');
 
                 tbody.innerHTML += `
