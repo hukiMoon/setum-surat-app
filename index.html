@@ -1001,6 +1001,16 @@
                 document.getElementById('app_utama').classList.add('d-none');
                 document.getElementById('section_ubah_password').classList.remove('d-none');
             } else {
+                const hashValue = window.location.hash;
+                if (hashValue && hashValue.includes('type=recovery')) {
+                    sessionStorage.setItem('sedangResetPassword', 'true');
+                    document.getElementById('section_login').classList.add('d-none');
+                    document.getElementById('section_lupa_password').classList.add('d-none');
+                    document.getElementById('app_utama').classList.add('d-none');
+                    document.getElementById('section_ubah_password').classList.remove('d-none');
+                    return;
+                }
+                
                 cekSesiPengguna(session);
             }
         });
