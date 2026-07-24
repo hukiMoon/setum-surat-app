@@ -1099,7 +1099,7 @@
             const editId = document.getElementById('edit_user_id').value;
             const nama = document.getElementById('nama_baru').value; 
             const pangkat = document.getElementById('pangkat_baru').value; 
-            const email = document.getElementById('email_baru').value;
+            const email = document.getElementById('email_baru').value.toLowerCase(); // Diubah jadi huruf kecil
             const role = document.getElementById('role_baru').value;
             const satker = document.getElementById('satker_baru').value;
             const pesanEl = document.getElementById('pesan_user');
@@ -1266,7 +1266,7 @@
                     <tr>
                         <td class="text-center">${idx + 1}</td>
                         <td class="fw-bold text-uppercase">${pangkatNama}</td>
-                        <td class="text-uppercase">${usr.email}</td>
+                        <td class="text-lowercase">${usr.email}</td>
                         <td class="text-center"><span class="badge bg-secondary text-uppercase">${usr.role}</span></td>
                         <td class="text-center text-uppercase">${usr.satker || '-'}</td>
                         ${aksiHTML}
