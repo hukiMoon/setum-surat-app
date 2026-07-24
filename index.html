@@ -30,6 +30,15 @@
             background-color: #ffffff !important;
             color: #0d6efd !important;
         }
+
+        /* Styling tambahan untuk foto profil di navbar */
+        .nav-profile-img {
+            width: 35px;
+            height: 35px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -99,7 +108,19 @@
                             <button class="nav-link text-white fw-bold" id="btn_menu_user" onclick="gantiMenu('user')">Manajemen User</button>
                         </li>
                     </ul>
-                    <button class="btn btn-outline-light btn-sm fw-bold" onclick="konfirmasiLogout()">Keluar</button>
+
+                    <!-- PROFIL & DROPDOWN MENU DI NAVBAR -->
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUserNav" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="me-2 small fw-bold d-none d-lg-inline" id="teks_selamat_datang">Hi, Selamat datang!</span>
+                            <img src="https://via.placeholder.com/150" alt="Foto Profil" id="foto_profil_nav" class="nav-profile-img">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUserNav">
+                            <li><h6 class="dropdown-header text-uppercase small" id="info_role_nav">Role</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="konfirmasiLogout()">Keluar</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -305,11 +326,11 @@
                                     <option value="Kapolda Bali">Kapolda Bali</option>
                                     <option value="Kapolda Nusa Tenggara Barat">Kapolda Nusa Tenggara Barat</option>
                                     <option value="Kapolda Nusa Tenggara Timur">Kapolda Nusa Tenggara Timur</option>
-                                    <option value="Kapolda Kalimantan Barat">Kapolda Kalimantan Barat</option>
-                                    <option value="Kapolda Kalimantan Tengah">Kapolda Kalimantan Tengah</option>
-                                    <option value="Kapolda Kalimantan Selatan">Kapolda Kalimantan Selatan</option>
-                                    <option value="Kapolda Kalimantan Timur">Kapolda Kalimantan Timur</option>
-                                    <option value="Kapolda Kalimantan Utara">Kapolda Kalimantan Utara</option>
+                                    <option value="Polda Kalimantan Barat">Polda Kalimantan Barat</option>
+                                    <option value="Polda Kalimantan Tengah">Polda Kalimantan Tengah</option>
+                                    <option value="Polda Kalimantan Selatan">Polda Kalimantan Selatan</option>
+                                    <option value="Polda Kalimantan Timur">Polda Kalimantan Timur</option>
+                                    <option value="Polda Kalimantan Utara">Polda Kalimantan Utara</option>
                                     <option value="Polda Sulawesi Utara">Polda Sulawesi Utara</option>
                                     <option value="Polda Gorontalo">Polda Gorontalo</option>
                                     <option value="Polda Sulawesi Tengah">Polda Sulawesi Tengah</option>
@@ -967,9 +988,15 @@
                     const pangkatUser = profile.pangkat ? profile.pangkat + ' ' : '';
                     const namaUser = profile.nama || session.user.email;
                     namaPenggunaAktif = pangkatUser + namaUser; 
+
+                    // Memperbarui tampilan teks selamat datang dan role di navbar
+                    document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${namaPenggunaAktif}!`;
+                    document.getElementById('info_role_nav').innerText = `Role: ${profile.role ? profile.role.toLowerCase() : '-'}`;
                 } else {
                     rolePenggunaAktif = 'bamin_banum'; 
                     namaPenggunaAktif = session.user.email;
+                    document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${session.user.email}!`;
+                    document.getElementById('info_role_nav').innerText = `Role: bamin_banum`;
                 }
 
                 if (rolePenggunaAktif === 'super_admin' || rolePenggunaAktif === 'admin' || rolePenggunaAktif === 'kasubbag') {
@@ -1100,7 +1127,7 @@
             const nama = document.getElementById('nama_baru').value; 
             const pangkat = document.getElementById('pangkat_baru').value; 
             const email = document.getElementById('email_baru').value.toLowerCase();
-            const role = document.getElementById('role_baru').value.toLowerCase(); // Disimpan dalam huruf kecil
+            const role = document.getElementById('role_baru').value.toLowerCase();
             const satker = document.getElementById('satker_baru').value;
             const pesanEl = document.getElementById('pesan_user');
 
