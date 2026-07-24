@@ -64,7 +64,18 @@
             </div>
             <div class="mb-3">
                 <label for="password_login" class="form-label fw-bold">Password:</label>
-                <input type="password" id="password_login" class="form-control" placeholder="Masukkan password..." onkeydown="cekTombolEnter(event)" autocomplete="new-password" required>
+                <div class="input-group">
+                    <input type="password" id="password_login" class="form-control" placeholder="Masukkan password..." onkeydown="cekTombolEnter(event)" autocomplete="new-password" required>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_login', 'icon_login')">
+                        <svg id="icon_login" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                            <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A6.094 6.094 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755l.191.195z"/>
+                            <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.828 2.828l.823.823z"/>
+                            <path d="M3.35 5.47c-.33.316-.663.68-.986 1.086C1.06 9.72 0 12 0 12s3 5.5 8 5.5c1.455 0 2.747-.358 3.854-.925l-1.077-1.077A6.538 6.538 0 0 1 8 16c-4.411 0-7.393-3.342-8-4 1.252-1.405 3.487-3.323 5.253-4.145l-1.903-1.903z"/>
+                            <path d="m8 7.5.568.568L8 8.636V7.5z"/>
+                            <path d="M1.293 1.293l13.414 13.414-1.414 1.414L-1.293 2.707 1.293 1.293z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <button class="btn btn-primary w-100 fw-bold mb-3" onclick="prosesLogin()">Masuk</button>
             <div class="text-center">
@@ -104,7 +115,18 @@
             </div>
             <div class="mb-3">
                 <label for="password_baru_pemulihan" class="form-label fw-bold">Password Baru:</label>
-                <input type="password" id="password_baru_pemulihan" class="form-control" placeholder="Minimal 6 karakter..." required>
+                <div class="input-group">
+                    <input type="password" id="password_baru_pemulihan" class="form-control" placeholder="Minimal 6 karakter..." required>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_baru_pemulihan', 'icon_pemulihan')">
+                        <svg id="icon_pemulihan" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                            <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A6.094 6.094 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755l.191.195z"/>
+                            <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.828 2.828l.823.823z"/>
+                            <path d="M3.35 5.47c-.33.316-.663.68-.986 1.086C1.06 9.72 0 12 0 12s3 5.5 8 5.5c1.455 0 2.747-.358 3.854-.925l-1.077-1.077A6.538 6.538 0 0 1 8 16c-4.411 0-7.393-3.342-8-4 1.252-1.405 3.487-3.323 5.253-4.145l-1.903-1.903z"/>
+                            <path d="m8 7.5.568.568L8 8.636V7.5z"/>
+                            <path d="M1.293 1.293l13.414 13.414-1.414 1.414L-1.293 2.707 1.293 1.293z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <button class="btn btn-success w-100 fw-bold mb-3" onclick="prosesSimpanPasswordBaru()">Simpan Password</button>
             <div class="text-center mt-2">
@@ -885,7 +907,18 @@
                             <!-- Password Sementara -->
                             <div class="col-md-6 mb-3" id="wrapper_password_baru">
                                 <label for="password_baru" class="form-label fw-bold">Password Sementara:</label>
-                                <input type="password" id="password_baru" class="form-control" placeholder="Minimal 6 karakter" required>
+                                <div class="input-group">
+                                    <input type="password" id="password_baru" class="form-control" placeholder="Minimal 6 karakter" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_baru', 'icon_user_baru')">
+                                        <svg id="icon_user_baru" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                                            <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A6.094 6.094 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755l.191.195z"/>
+                                            <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.828 2.828l.823.823z"/>
+                                            <path d="M3.35 5.47c-.33.316-.663.68-.986 1.086C1.06 9.72 0 12 0 12s3 5.5 8 5.5c1.455 0 2.747-.358 3.854-.925l-1.077-1.077A6.538 6.538 0 0 1 8 16c-4.411 0-7.393-3.342-8-4 1.252-1.405 3.487-3.323 5.253-4.145l-1.903-1.903z"/>
+                                            <path d="m8 7.5.568.568L8 8.636V7.5z"/>
+                                            <path d="M1.293 1.293l13.414 13.414-1.414 1.414L-1.293 2.707 1.293 1.293z"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                             
                             <!-- Pilih Role / Jabatan -->
@@ -1313,6 +1346,29 @@
                 document.getElementById('email_login').value = '';
                 document.getElementById('password_login').value = '';
                 cekSesiPengguna();
+            }
+        }
+
+        // --- FUNGSI TOGGLE LIHAT/SEMBUNYIKAN PASSWORD ---
+        function togglePassword(idInput, idIcon) {
+            const inputEl = document.getElementById(idInput);
+            const iconEl = document.getElementById(idIcon);
+            
+            if (inputEl.type === "password") {
+                inputEl.type = "text";
+                iconEl.innerHTML = `
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                `;
+            } else {
+                inputEl.type = "password";
+                iconEl.innerHTML = `
+                    <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A6.094 6.094 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755l.191.195z"/>
+                    <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.828 2.828l.823.823z"/>
+                    <path d="M3.35 5.47c-.33.316-.663.68-.986 1.086C1.06 9.72 0 12 0 12s3 5.5 8 5.5c1.455 0 2.747-.358 3.854-.925l-1.077-1.077A6.538 6.538 0 0 1 8 16c-4.411 0-7.393-3.342-8-4 1.252-1.405 3.487-3.323 5.253-4.145l-1.903-1.903z"/>
+                    <path d="m8 7.5.568.568L8 8.636V7.5z"/>
+                    <path d="M1.293 1.293l13.414 13.414-1.414 1.414L-1.293 2.707 1.293 1.293z"/>
+                `;
             }
         }
 
