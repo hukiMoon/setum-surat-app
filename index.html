@@ -993,14 +993,28 @@
                 tomSelectInstances[el.id] = instance;
             });
             
-            // Cek status saat halaman pertama kali dimuat atau di-refresh
             cekStatusHalamanAwal();
         });
 
         async function cekStatusHalamanAwal() {
             const hashValue = window.location.hash;
+            const queryParams = window.location.search;
             
-            // Jika ada tanda recovery di URL, simpan statusnya
+            // Deteksi jika link kedaluwarsa / error dari Supabase (baik di hash maupun query string)
+            if (hashValue.includes('error=access_denied') || hashValue.includes('error_code=') || queryParams.includes('error=access_denied')) {
+                sessionStorage.removeItem('sedangResetPassword');
+                await supabaseClient.auth.signOut();
+                window.history.replaceState(null, null, window.location.pathname);
+                
+                document.getElementById('section_ubah_password').classList.add('d-none');
+                document.getElementById('section_login').classList.remove('d-none');
+                
+                const pesanLogin = document.getElementById('pesan_login');
+                pesanLogin.className = "mt-3 text-center small fw-bold text-danger";
+                pesanLogin.innerText = "Tautan reset password sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.";
+                return;
+            }
+
             if (hashValue && hashValue.includes('type=recovery')) {
                 sessionStorage.setItem('sedangResetPassword', 'true');
             }
@@ -1020,6 +1034,23 @@
 
         // --- 2. PEMANTAU AUTH STATE & SESI PENGGUNA ---
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            const hashValue = window.location.hash;
+            const queryParams = window.location.search;
+
+            if (hashValue.includes('error=access_denied') || hashValue.includes('error_code=') || queryParams.includes('error=access_denied')) {
+                sessionStorage.removeItem('sedangResetPassword');
+                await supabaseClient.auth.signOut();
+                window.history.replaceState(null, null, window.location.pathname);
+                
+                document.getElementById('section_ubah_password').classList.add('d-none');
+                document.getElementById('section_login').classList.remove('d-none');
+                
+                const pesanLogin = document.getElementById('pesan_login');
+                pesanLogin.className = "mt-3 text-center small fw-bold text-danger";
+                pesanLogin.innerText = "Tautan reset password sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.";
+                return;
+            }
+
             if (event === 'PASSWORD_RECOVERY') {
                 sessionStorage.setItem('sedangResetPassword', 'true');
                 
@@ -1028,21 +1059,6 @@
                 document.getElementById('app_utama').classList.add('d-none');
                 document.getElementById('section_ubah_password').classList.remove('d-none');
             } else {
-                const hashValue = window.location.hash;
-                
-                // Jika URL membawa token error dari Supabase (misal token kadaluwarsa/sudah dipakai)
-                if (hashValue && (hashValue.includes('error=access_denied') || hashValue.includes('error_code='))) {
-                    sessionStorage.removeItem('sedangResetPassword');
-                    await supabaseClient.auth.signOut();
-                    window.history.replaceState(null, null, window.location.pathname);
-                    
-                    document.getElementById('section_ubah_password').classList.add('d-none');
-                    document.getElementById('section_login').classList.remove('d-none');
-                    document.getElementById('pesan_login').className = "mt-3 text-center small fw-bold text-danger";
-                    document.getElementById('pesan_login').innerText = "Tautan reset password sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.";
-                    return;
-                }
-
                 if (sessionStorage.getItem('sedangResetPassword') === 'true') {
                     document.getElementById('section_login').classList.add('d-none');
                     document.getElementById('section_lupa_password').classList.add('d-none');
