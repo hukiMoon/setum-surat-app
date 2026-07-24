@@ -116,15 +116,13 @@
                         </li>
                     </ul>
 
-                    <!-- PROFIL & DROPDOWN MENU DENGAN INISIAL OTOMATIS -->
+                    <!-- PROFIL & DROPDOWN MENU (ROLE DIHAPUS DARI KOTAK DROPDOWN) -->
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUserNav" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="me-2 small fw-bold d-none d-lg-inline" id="teks_selamat_datang">Hi, Selamat datang!</span>
                             <div id="avatar_inisial_nav" class="nav-profile-avatar">U</div>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUserNav">
-                            <li><h6 class="dropdown-header text-uppercase small" id="info_role_nav">Role</h6></li>
-                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="konfirmasiLogout()">Keluar</a></li>
                         </ul>
                     </div>
@@ -999,13 +997,11 @@
                     sumberTeks = profile.nama || session.user.email;
 
                     document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${namaPenggunaAktif}!`;
-                    document.getElementById('info_role_nav').innerText = `Role: ${profile.role ? profile.role.toLowerCase() : '-'}`;
                 } else {
                     rolePenggunaAktif = 'bamin_banum'; 
                     namaPenggunaAktif = session.user.email;
                     sumberTeks = session.user.email;
                     document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${session.user.email}!`;
-                    document.getElementById('info_role_nav').innerText = `Role: bamin_banum`;
                 }
 
                 // Memperbarui avatar lingkaran inisial otomatis
