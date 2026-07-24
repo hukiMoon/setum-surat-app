@@ -1260,16 +1260,15 @@
                     `;
                 }
 
-                // Menggabungkan kembali Pangkat dan Nama Lengkap pada satu kolom tabel user
                 const pangkatNama = (usr.pangkat ? usr.pangkat + ' ' : '') + (usr.nama || '-');
 
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-center">${idx + 1}</td>
-                        <td class="fw-bold">${pangkatNama}</td>
-                        <td>${usr.email}</td>
-                        <td class="text-center"><span class="badge bg-secondary">${usr.role}</span></td>
-                        <td class="text-center">${usr.satker || '-'}</td>
+                        <td class="fw-bold text-uppercase">${pangkatNama}</td>
+                        <td class="text-uppercase">${usr.email}</td>
+                        <td class="text-center"><span class="badge bg-secondary text-uppercase">${usr.role}</span></td>
+                        <td class="text-center text-uppercase">${usr.satker || '-'}</td>
                         ${aksiHTML}
                     </tr>
                 `;
