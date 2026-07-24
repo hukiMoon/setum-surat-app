@@ -994,6 +994,8 @@
         // --- 2. PEMANTAU AUTH STATE & SESI PENGGUNA ---
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
             if (event === 'PASSWORD_RECOVERY') {
+                sessionStorage.setItem('sedangResetPassword', 'true');
+                
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
@@ -1011,8 +1013,10 @@
             }
             
             const hashValue = window.location.hash;
+            const sedangReset = sessionStorage.getItem('sedangResetPassword');
             
-            if (hashValue && hashValue.includes('type=recovery')) {
+            if ((hashValue && hashValue.includes('type=recovery')) || sedangReset === 'true') {
+                sessionStorage.setItem('sedangResetPassword', 'true');
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
@@ -1103,6 +1107,8 @@
             } else {
                 pesanEl.className = "mt-3 text-center small fw-bold text-success";
                 pesanEl.innerText = "Berhasil mengubah password! Mengalihkan ke aplikasi utama...";
+                
+                sessionStorage.removeItem('sedangResetPassword');
                 
                 setTimeout(() => {
                     window.history.replaceState(null, null, window.location.pathname);
