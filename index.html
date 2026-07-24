@@ -989,7 +989,6 @@
                     const namaUser = profile.nama || session.user.email;
                     namaPenggunaAktif = pangkatUser + namaUser; 
 
-                    // Memperbarui tampilan teks selamat datang dan role di navbar
                     document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${namaPenggunaAktif}!`;
                     document.getElementById('info_role_nav').innerText = `Role: ${profile.role ? profile.role.toLowerCase() : '-'}`;
                 } else {
