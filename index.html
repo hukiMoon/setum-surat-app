@@ -1011,6 +1011,12 @@
                     return;
                 }
                 
+                // Jika tidak ada tanda pemulihan aktif dan token URL sudah basi/tidak ada, bersihkan status sesi kedaluwarsa
+                if (sessionStorage.getItem('sedangResetPassword') === 'true' && !hashValue.includes('type=recovery')) {
+                    sessionStorage.removeItem('sedangResetPassword');
+                    await supabaseClient.auth.signOut();
+                }
+
                 cekSesiPengguna(session);
             }
         });
@@ -1910,7 +1916,7 @@
                 surat.petugas || '-'
             ]);
 
-            doc.autoTable({ 
+    doc.autoTable({ 
                 startY: 35, 
                 head: namaKolom, 
                 body: barisData, 
