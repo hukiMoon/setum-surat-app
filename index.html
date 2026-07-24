@@ -107,6 +107,9 @@
                 <input type="password" id="password_baru_pemulihan" class="form-control" placeholder="Minimal 6 karakter..." required>
             </div>
             <button class="btn btn-success w-100 fw-bold mb-3" onclick="prosesSimpanPasswordBaru()">Simpan Password</button>
+            <div class="text-center mt-2">
+                <a href="#" class="small text-decoration-none" onclick="batalDanKeLogin()">← Kembali ke Halaman Masuk</a>
+            </div>
             <div id="pesan_ubah_password" class="mt-3 text-center small fw-bold"></div>
         </div>
     </div>
@@ -1002,6 +1005,20 @@
                 document.getElementById('section_ubah_password').classList.remove('d-none');
             } else {
                 const hashValue = window.location.hash;
+                
+                // Jika URL membawa token error dari Supabase (misal token kadaluwarsa/sudah dipakai)
+                if (hashValue && (hashValue.includes('error=access_denied') || hashValue.includes('error_code='))) {
+                    sessionStorage.removeItem('sedangResetPassword');
+                    await supabaseClient.auth.signOut();
+                    window.history.replaceState(null, null, window.location.pathname);
+                    
+                    document.getElementById('section_login').classList.remove('d-none');
+                    document.getElementById('section_ubah_password').classList.add('d-none');
+                    document.getElementById('pesan_login').className = "mt-3 text-center small fw-bold text-danger";
+                    document.getElementById('pesan_login').innerText = "Tautan reset password sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.";
+                    return;
+                }
+
                 if (hashValue && hashValue.includes('type=recovery')) {
                     sessionStorage.setItem('sedangResetPassword', 'true');
                     document.getElementById('section_login').classList.add('d-none');
@@ -1011,10 +1028,13 @@
                     return;
                 }
                 
-                // Jika tidak ada tanda pemulihan aktif dan token URL sudah basi/tidak ada, bersihkan status sesi kedaluwarsa
+                // Jika status reset tersimpan di storage tapi token hash sudah hilang/bersih, tendang ke login
                 if (sessionStorage.getItem('sedangResetPassword') === 'true' && !hashValue.includes('type=recovery')) {
                     sessionStorage.removeItem('sedangResetPassword');
                     await supabaseClient.auth.signOut();
+                    document.getElementById('section_ubah_password').classList.add('d-none');
+                    document.getElementById('section_login').classList.remove('d-none');
+                    return;
                 }
 
                 cekSesiPengguna(session);
@@ -1125,12 +1145,24 @@
                 pesanEl.innerText = "Berhasil mengubah password! Mengalihkan ke aplikasi utama...";
                 
                 sessionStorage.removeItem('sedangResetPassword');
+                await supabaseClient.auth.signOut();
                 
                 setTimeout(() => {
                     window.history.replaceState(null, null, window.location.pathname);
-                    cekSesiPengguna();
-                }, 2500);
+                    document.getElementById('section_ubah_password').classList.add('d-none');
+                    document.getElementById('section_login').classList.remove('d-none');
+                    document.getElementById('pesan_login').className = "mt-3 text-center small fw-bold text-success";
+                    document.getElementById('pesan_login').innerText = "Password berhasil diubah! Silakan masuk dengan password baru Anda.";
+                }, 2000);
             }
+        }
+
+        async function batalDanKeLogin() {
+            sessionStorage.removeItem('sedangResetPassword');
+            await supabaseClient.auth.signOut();
+            window.history.replaceState(null, null, window.location.pathname);
+            document.getElementById('section_ubah_password').classList.add('d-none');
+            document.getElementById('section_login').classList.remove('d-none');
         }
 
         async function prosesLogin() {
@@ -1916,7 +1948,7 @@
                 surat.petugas || '-'
             ]);
 
-    doc.autoTable({ 
+            doc.autoTable({ 
                 startY: 35, 
                 head: namaKolom, 
                 body: barisData, 
