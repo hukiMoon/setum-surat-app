@@ -992,7 +992,7 @@
                 if (profile) {
                     rolePenggunaAktif = profile.role;
                     const pangkatUser = profile.pangkat ? profile.pangkat.toUpperCase() + ' ' : '';
-                    const namaUser = profile.nama ? profile.nama.toUpperCase() : session.user.email;
+                    const namaUser = profile.nama ? profile.nama.toUpperCase() : session.user.email.toUpperCase();
                     namaPenggunaAktif = pangkatUser + namaUser; 
                     sumberTeks = profile.nama || session.user.email;
 
@@ -1096,8 +1096,11 @@
             pesanEl.className = "mt-3 text-center small fw-bold text-primary";
             pesanEl.innerText = "Mengirim tautan pemulihan...";
 
+            // Menggunakan window.location.origin untuk mencegah error null pada redirectTo
+            const redirectUrl = window.location.origin + window.location.pathname;
+
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.href,
+                redirectTo: redirectUrl,
             });
 
             if (error) {
