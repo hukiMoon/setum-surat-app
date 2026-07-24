@@ -60,11 +60,11 @@
             </div>
             <div class="mb-3">
                 <label for="email_login" class="form-label fw-bold">Email:</label>
-                <input type="email" id="email_login" class="form-control" placeholder="Masukkan email..." onkeydown="cekTombolEnter(event)" required>
+                <input type="email" id="email_login" class="form-control" placeholder="Masukkan email..." onkeydown="cekTombolEnter(event)" autocomplete="off" required>
             </div>
             <div class="mb-3">
                 <label for="password_login" class="form-label fw-bold">Password:</label>
-                <input type="password" id="password_login" class="form-control" placeholder="Masukkan password..." onkeydown="cekTombolEnter(event)" required>
+                <input type="password" id="password_login" class="form-control" placeholder="Masukkan password..." onkeydown="cekTombolEnter(event)" autocomplete="new-password" required>
             </div>
             <button class="btn btn-primary w-100 fw-bold mb-3" onclick="prosesLogin()">Masuk</button>
             <div class="text-center">
@@ -1310,6 +1310,8 @@
             if (error) {
                 alert("Gagal keluar: " + error.message);
             } else {
+                document.getElementById('email_login').value = '';
+                document.getElementById('password_login').value = '';
                 cekSesiPengguna();
             }
         }
