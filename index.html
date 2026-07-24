@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <!-- ================= HALAMAN LUPA PASSWORD (BARU) ================= -->
+    <!-- ================= HALAMAN LUPA PASSWORD ================= -->
     <div id="section_lupa_password" class="container d-flex justify-content-center align-items-center vh-100 d-none">
         <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
             <div class="text-center mb-4">
@@ -706,16 +706,65 @@
                         <input type="hidden" id="edit_user_id"> 
                         
                         <div class="row">
+                            <!-- Nama Lengkap -->
                             <div class="col-md-6 mb-3">
                                 <label for="nama_baru" class="form-label fw-bold">Nama Lengkap:</label>
                                 <input type="text" id="nama_baru" class="form-control" placeholder="Masukkan nama lengkap..." required>
                             </div>
+
+                            <!-- PANGKAT (DROPDOWN BARU SEBELUM EMAIL) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="pangkat_baru" class="form-label fw-bold">Pangkat:</label>
+                                <select id="pangkat_baru" class="form-select searchable-select" required>
+                                    <option value="" disabled selected>-- Pilih Pangkat --</option>
+                                    <option value="JENDERAL POLISI">JENDERAL POLISI</option>
+                                    <option value="KOMJEN POL">KOMJEN POL</option>
+                                    <option value="IRJEN POL">IRJEN POL</option>
+                                    <option value="BRIGJEN POL">BRIGJEN POL</option>
+                                    <option value="KOMBES POL">KOMBES POL</option>
+                                    <option value="AKBP">AKBP</option>
+                                    <option value="KOMPOL">KOMPOL</option>
+                                    <option value="AKP">AKP</option>
+                                    <option value="IPTU">IPTU</option>
+                                    <option value="IPDA">IPDA</option>
+                                    <option value="AIPTU">AIPTU</option>
+                                    <option value="AIPDA">AIPDA</option>
+                                    <option value="BRIPKA">BRIPKA</option>
+                                    <option value="BRIGPOL">BRIGPOL</option>
+                                    <option value="BRIPTU">BRIPTU</option>
+                                    <option value="BRIPDA">BRIPDA</option>
+                                    <option value="ABRIPTU">ABRIPTU</option>
+                                    <option value="ABRIPDA">ABRIPDA</option>
+                                    <option value="BHARAKA">BHARAKA</option>
+                                    <option value="BHARATU">BHARATU</option>
+                                    <option value="BHARADA">BHARADA</option>
+                                    <option value="PEMBINA UTAMA">PEMBINA UTAMA</option>
+                                    <option value="PEMBINA UTAMA MADYA">PEMBINA UTAMA MADYA</option>
+                                    <option value="PEMBINA UTAMA MUDA">PEMBINA UTAMA MUDA</option>
+                                    <option value="PEMBINA TK. I">PEMBINA TK. I</option>
+                                    <option value="PEMBINA">PEMBINA</option>
+                                    <option value="PENATA TK. I">PENATA TK. I</option>
+                                    <option value="PENATA">PENATA</option>
+                                    <option value="PENDA TK. I">PENDA TK. I</option>
+                                    <option value="PENDA">PENDA</option>
+                                    <option value="PENGATUR TK. I">PENGATUR TK. I</option>
+                                    <option value="PENGATUR">PENGATUR</option>
+                                    <option value="PENGDA TK. I">PENGDA TK. I</option>
+                                    <option value="PENGDA">PENGDA</option>
+                                    <option value="JURU TK. I">JURU TK. I</option>
+                                    <option value="JURU">JURU</option>
+                                    <option value="JURMUD TK. I">JURMUD TK. I</option>
+                                    <option value="JURMUD">JURMUD</option>
+                                </select>
+                            </div>
                             
+                            <!-- Email User -->
                             <div class="col-md-6 mb-3">
                                 <label for="email_baru" class="form-label fw-bold">Email User:</label>
                                 <input type="email" id="email_baru" class="form-control" placeholder="email@polri.go.id" required>
                             </div>
                         
+                            <!-- Satuan Kerja -->
                             <div class="col-md-6 mb-3">
                                 <label for="satker_baru" class="form-label fw-bold">Satuan Kerja:</label>
                                 <select id="satker_baru" class="form-select searchable-select" required>
@@ -787,11 +836,13 @@
                                 </select>
                             </div>
                         
+                            <!-- Password Sementara -->
                             <div class="col-md-6 mb-3" id="wrapper_password_baru">
                                 <label for="password_baru" class="form-label fw-bold">Password Sementara:</label>
                                 <input type="password" id="password_baru" class="form-control" placeholder="Minimal 6 karakter" required>
                             </div>
                             
+                            <!-- Pilih Role / Jabatan -->
                             <div class="col-md-6 mb-3">
                                 <label for="role_baru" class="form-label fw-bold">Pilih Role / Jabatan:</label>
                                 <select id="role_baru" class="form-select searchable-select" required>
@@ -828,7 +879,7 @@
                                 <thead class="table-dark text-center">
                                     <tr>
                                         <th>No</th>
-                                        <th>Nama Lengkap</th>
+                                        <th>Nama Lengkap & Pangkat</th>
                                         <th>Email</th>
                                         <th>Role / Peran</th>
                                         <th>Satuan Kerja</th>
@@ -907,13 +958,16 @@
                 
                 const { data: profile } = await supabaseClient
                     .from('profiles')
-                    .select('role, nama')
+                    .select('role, nama, pangkat')
                     .eq('id', session.user.id)
                     .single();
 
                 if (profile) {
                     rolePenggunaAktif = profile.role;
-                    namaPenggunaAktif = profile.nama || session.user.email; 
+                    // Menggabungkan Pangkat dan Nama untuk petugas pencatat surat
+                    const pangkatUser = profile.pangkat ? profile.pangkat + ' ' : '';
+                    const namaUser = profile.nama || session.user.email;
+                    namaPenggunaAktif = pangkatUser + namaUser; 
                 } else {
                     rolePenggunaAktif = 'bamin_banum'; 
                     namaPenggunaAktif = session.user.email;
@@ -978,7 +1032,6 @@
             }
         }
 
-        // --- FUNGSI MENGALIHKAN TAMPILAN LOGIN & LUPA PASSWORD ---
         function gantiTampilanAuth(tujuan) {
             const secLogin = document.getElementById('section_login');
             const secLupa = document.getElementById('section_lupa_password');
@@ -1046,6 +1099,7 @@
         async function simpanUser() {
             const editId = document.getElementById('edit_user_id').value;
             const nama = document.getElementById('nama_baru').value; 
+            const pangkat = document.getElementById('pangkat_baru').value; // Mengambil nilai pangkat
             const email = document.getElementById('email_baru').value;
             const role = document.getElementById('role_baru').value;
             const satker = document.getElementById('satker_baru').value;
@@ -1055,7 +1109,7 @@
                 pesanEl.className = "mt-3 fw-bold text-primary";
                 pesanEl.innerText = "Memperbarui data user...";
 
-                const { error } = await supabaseClient.from('profiles').update({ nama: nama, role: role, satker: satker }).eq('id', editId);
+                const { error } = await supabaseClient.from('profiles').update({ nama: nama, pangkat: pangkat, role: role, satker: satker }).eq('id', editId);
                 
                 if (error) {
                     pesanEl.className = "mt-3 fw-bold text-danger";
@@ -1068,7 +1122,7 @@
                 }
             } else {
                 const password = document.getElementById('password_baru').value;
-                if (!nama || !email || !password || !role || !satker) {
+                if (!nama || !pangkat || !email || !password || !role || !satker) {
                     alert("Semua kolom wajib diisi untuk membuat akun baru!");
                     return;
                 }
@@ -1084,7 +1138,7 @@
                 } else if (data && data.user) {
                     const userId = data.user.id;
                     const { error: profileError } = await supabaseClient.from('profiles').insert([
-                        { id: userId, nama: nama, email: email, role: role, satker: satker }
+                        { id: userId, nama: nama, pangkat: pangkat, email: email, role: role, satker: satker }
                     ]);
 
                     if (profileError) {
@@ -1100,9 +1154,16 @@
             }
         }
 
-        function editUser(id, nama, email, role, satker) {
+        function editUser(id, nama, pangkat, email, role, satker) {
             document.getElementById('edit_user_id').value = id;
             document.getElementById('nama_baru').value = nama; 
+            
+            if(tomSelectInstances['pangkat_baru']) {
+                tomSelectInstances['pangkat_baru'].setValue(pangkat || '');
+            } else {
+                document.getElementById('pangkat_baru').value = pangkat || '';
+            }
+
             document.getElementById('email_baru').value = email;
             document.getElementById('email_baru').disabled = true;
             document.getElementById('wrapper_password_baru').classList.add('d-none');
@@ -1129,6 +1190,9 @@
         function batalEditUser() {
             document.getElementById('edit_user_id').value = '';
             document.getElementById('nama_baru').value = ''; 
+            
+            if(tomSelectInstances['pangkat_baru']) tomSelectInstances['pangkat_baru'].clear();
+
             document.getElementById('email_baru').value = '';
             document.getElementById('email_baru').disabled = false;
             document.getElementById('password_baru').value = '';
@@ -1191,16 +1255,19 @@
                 if (rolePenggunaAktif === 'super_admin') {
                     aksiHTML = `
                         <td class="text-center">
-                            <button class="btn btn-warning btn-sm me-1" onclick="editUser('${usr.id}', '${usr.nama || ''}', '${usr.email}', '${usr.role}', '${usr.satker || ''}')">Edit</button>
+                            <button class="btn btn-warning btn-sm me-1" onclick="editUser('${usr.id}', '${usr.nama || ''}', '${usr.pangkat || ''}', '${usr.email}', '${usr.role}', '${usr.satker || ''}')">Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="konfirmasiHapusUser('${usr.id}')">Hapus</button>
                         </td>
                     `;
                 }
 
+                // Menampilkan Pangkat dan Nama Lengkap pada tabel user
+                const pangkatNama = (usr.pangkat ? usr.pangkat + ' ' : '') + (usr.nama || '-');
+
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-center">${idx + 1}</td>
-                        <td class="fw-bold">${usr.nama || '-'}</td>
+                        <td class="fw-bold">${pangkatNama}</td>
                         <td>${usr.email}</td>
                         <td class="text-center"><span class="badge bg-secondary">${usr.role}</span></td>
                         <td class="text-center">${usr.satker || '-'}</td>
@@ -1509,7 +1576,7 @@
             tampilkanSurat(tipe);
         }
 
-        // --- SISTEM KOTAK DIALOG MODAL KUSTOM (DENGAN EFEK BLUR) ---
+        // --- SISTEM KOTAK DIALOG MODAL KUSTOM ---
         function tampilkanModalKonfirmasi(pesan, fungsiEksekusi) {
             document.getElementById('teksPesanKonfirmasi').innerText = pesan;
             const modalEl = document.getElementById('modalKonfirmasi');
@@ -1655,7 +1722,6 @@
             XLSX.writeFile(workbook, `Laporan_Surat_${tipe === 'masuk' ? 'Masuk' : 'Keluar'}.xlsx`);
         }
 
-        // --- FUNGSI UNDUH PDF (MENARIK SEMUA DATA DARI DATABASE) ---
         async function unduhPDF(tipe) {
             const namaTabel = tipe === 'masuk' ? 'surat_masuk' : 'surat_keluar';
             const keyword = document.getElementById(`cari_${tipe}`).value;
