@@ -991,16 +991,30 @@
             });
         });
 
-        // --- 2. SISTEM AUTENTIKASI & CEK ROLE ---
-        async function cekSesiPengguna() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
+        // --- 2. PEMANTAU AUTH STATE & SESI PENGGUNA ---
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                document.getElementById('section_login').classList.add('d-none');
+                document.getElementById('section_lupa_password').classList.add('d-none');
+                document.getElementById('app_utama').classList.add('d-none');
+                document.getElementById('section_ubah_password').classList.remove('d-none');
+            } else {
+                cekSesiPengguna(session);
+            }
+        });
+
+        async function cekSesiPengguna(sessionAktif = null) {
+            let session = sessionAktif;
+            if (!session) {
+                const res = await supabaseClient.auth.getSession();
+                session = res.data.session;
+            }
             
             const hashValue = window.location.hash;
             if (hashValue && hashValue.includes('type=recovery')) {
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
-                
                 document.getElementById('section_ubah_password').classList.remove('d-none');
                 return; 
             }
@@ -1087,7 +1101,7 @@
                 }
             } else {
                 pesanEl.className = "mt-3 text-center small fw-bold text-success";
-                pesanEl.innerText = "Berhasil! Mengalihkan ke aplikasi utama...";
+                pesanEl.innerText = "Berhasil mengubah password! Mengalihkan ke aplikasi utama...";
                 
                 setTimeout(() => {
                     window.history.replaceState(null, null, window.location.pathname);
@@ -1889,9 +1903,6 @@
             
             doc.save(`Laporan_Surat_${tipe === 'masuk' ? 'Masuk' : 'Keluar'}.pdf`);
         }
-
-        // --- INISIALISASI AWAL MENGECEK SESI LOGIN ---
-        cekSesiPengguna();
     </script>
 </body>
 </html>
