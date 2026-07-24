@@ -993,20 +993,22 @@
 
         // --- 2. SISTEM AUTENTIKASI & CEK ROLE ---
         async function cekSesiPengguna() {
-            // DETEKSI URL: Cek apakah user sedang dalam proses pemulihan (recovery) password
+            // 1. PENTING: Biarkan Supabase mengecek dan membaca token di URL terlebih dahulu untuk membuat sesi sementara
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            // 2. Setelah sesi berhasil dibuat, baru kita deteksi apakah ini adalah proses pemulihan (recovery) password
             const hashValue = window.location.hash;
             if (hashValue && hashValue.includes('type=recovery')) {
-                // Tampilkan halaman ubah password khusus dan hentikan proses muat aplikasi utama
+                // Tampilkan halaman ubah password khusus dan sembunyikan yang lain
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
                 
                 document.getElementById('section_ubah_password').classList.remove('d-none');
-                return; 
+                return; // Hentikan kode di sini agar aplikasi utama tidak dimuat
             }
 
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            
+            // 3. Jika bukan proses reset password, jalankan logika aplikasi seperti biasa
             if (session) {
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
