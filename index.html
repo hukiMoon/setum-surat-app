@@ -993,22 +993,18 @@
 
         // --- 2. SISTEM AUTENTIKASI & CEK ROLE ---
         async function cekSesiPengguna() {
-            // 1. PENTING: Biarkan Supabase mengecek dan membaca token di URL terlebih dahulu untuk membuat sesi sementara
             const { data: { session } } = await supabaseClient.auth.getSession();
             
-            // 2. Setelah sesi berhasil dibuat, baru kita deteksi apakah ini adalah proses pemulihan (recovery) password
             const hashValue = window.location.hash;
             if (hashValue && hashValue.includes('type=recovery')) {
-                // Tampilkan halaman ubah password khusus dan sembunyikan yang lain
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
                 
                 document.getElementById('section_ubah_password').classList.remove('d-none');
-                return; // Hentikan kode di sini agar aplikasi utama tidak dimuat
+                return; 
             }
 
-            // 3. Jika bukan proses reset password, jalankan logika aplikasi seperti biasa
             if (session) {
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
@@ -1081,7 +1077,14 @@
 
             if (error) {
                 pesanEl.className = "mt-3 text-center small fw-bold text-danger";
-                pesanEl.innerText = "Gagal mengubah password: " + error.message;
+                
+                if (error.message.includes("New password should be different from the old password")) {
+                    pesanEl.innerText = "Gagal mengubah password: Password baru harus berbeda dari password yang lama.";
+                } else if (error.message.includes("Auth session missing")) {
+                    pesanEl.innerText = "Gagal mengubah password: Sesi autentikasi tidak ditemukan atau sudah kedaluwarsa.";
+                } else {
+                    pesanEl.innerText = "Gagal mengubah password: " + error.message;
+                }
             } else {
                 pesanEl.className = "mt-3 text-center small fw-bold text-success";
                 pesanEl.innerText = "Berhasil! Mengalihkan ke aplikasi utama...";
@@ -1163,7 +1166,6 @@
             pesanEl.className = "mt-3 text-center small fw-bold text-primary";
             pesanEl.innerText = "Mengirim tautan pemulihan...";
 
-            // Menggunakan window.location.origin untuk mencegah error null pada redirectTo
             const redirectUrl = window.location.origin + window.location.pathname;
 
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
