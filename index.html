@@ -50,7 +50,10 @@
                 <label for="password_login" class="form-label fw-bold">Password:</label>
                 <input type="password" id="password_login" class="form-control" placeholder="Masukkan password..." onkeydown="cekTombolEnter(event)" required>
             </div>
-            <button class="btn btn-primary w-100 fw-bold" onclick="prosesLogin()">Masuk</button>
+            <button class="btn btn-primary w-100 fw-bold mb-3" onclick="prosesLogin()">Masuk</button>
+            <div class="text-center">
+                <a href="#" class="small text-decoration-none" onclick="prosesLupaPassword()">Lupa password?</a>
+            </div>
             <div id="pesan_login" class="mt-3 text-center small fw-bold"></div>
         </div>
     </div>
@@ -354,7 +357,6 @@
                             <table class="table table-bordered table-striped table-hover align-middle">
                                 <thead class="table-primary text-center align-middle">
                                     <tr>
-                                        <!-- Lebar disesuaikan agar pas 100% -->
                                         <th style="width: 5%;">No</th>
                                         <th style="width: 12%;">Jenis Surat</th>
                                         <th style="width: 13%;">Nomor Surat</th>
@@ -520,6 +522,11 @@
                                     <option value="Polda Papua Pegunungan">Polda Papua Pegunungan</option>
                                     <option value="Polda Papua Selatan">Polda Papua Selatan</option>
                                 </select>
+
+                                <div id="wrapper_pengirim_lain_keluar" class="d-none mt-2">
+                                    <label for="pengirim_lain_keluar" class="form-label fw-bold text-muted small">Silakan masukan pengirim disini:</label>
+                                    <input type="text" id="pengirim_lain_keluar" class="form-control" placeholder="Masukkan nama instansi luar...">
+                                </div>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -645,7 +652,6 @@
                             <table class="table table-bordered table-striped table-hover align-middle">
                                 <thead class="table-success text-center align-middle">
                                     <tr>
-                                        <!-- Lebar disesuaikan agar pas 100% -->
                                         <th style="width: 5%;">No</th>
                                         <th style="width: 12%;">Jenis Surat</th>
                                         <th style="width: 13%;">Nomor Surat</th>
@@ -680,19 +686,16 @@
                         <input type="hidden" id="edit_user_id"> 
                         
                         <div class="row">
-                            <!-- 1. NAMA USER (KOLOM BARU) -->
                             <div class="col-md-6 mb-3">
                                 <label for="nama_baru" class="form-label fw-bold">Nama Lengkap:</label>
                                 <input type="text" id="nama_baru" class="form-control" placeholder="Masukkan nama lengkap..." required>
                             </div>
                             
-                            <!-- 2. Email User -->
                             <div class="col-md-6 mb-3">
                                 <label for="email_baru" class="form-label fw-bold">Email User:</label>
                                 <input type="email" id="email_baru" class="form-control" placeholder="email@polri.go.id" required>
                             </div>
                         
-                            <!-- 3. Satuan Kerja -->
                             <div class="col-md-6 mb-3">
                                 <label for="satker_baru" class="form-label fw-bold">Satuan Kerja:</label>
                                 <select id="satker_baru" class="form-select searchable-select" required>
@@ -764,13 +767,11 @@
                                 </select>
                             </div>
                         
-                            <!-- 4. Password Sementara -->
                             <div class="col-md-6 mb-3" id="wrapper_password_baru">
                                 <label for="password_baru" class="form-label fw-bold">Password Sementara:</label>
                                 <input type="password" id="password_baru" class="form-control" placeholder="Minimal 6 karakter" required>
                             </div>
                             
-                            <!-- 5. Pilih Role / Jabatan -->
                             <div class="col-md-6 mb-3">
                                 <label for="role_baru" class="form-label fw-bold">Pilih Role / Jabatan:</label>
                                 <select id="role_baru" class="form-select searchable-select" required>
@@ -807,7 +808,7 @@
                                 <thead class="table-dark text-center">
                                     <tr>
                                         <th>No</th>
-                                        <th>Nama Lengkap</th> <!-- KOLOM BARU DI TABEL USER -->
+                                        <th>Nama Lengkap</th>
                                         <th>Email</th>
                                         <th>Role / Peran</th>
                                         <th>Satuan Kerja</th>
@@ -857,7 +858,7 @@
         let dataMasukTerakhir = [];
         let dataKeluarTerakhir = [];
         let rolePenggunaAktif = '';
-        let namaPenggunaAktif = ''; // MENYIMPAN NAMA ASLI PETUGAS SAAT LOGIN
+        let namaPenggunaAktif = ''; 
         let tomSelectInstances = {};
 
         const barisPerHalaman = 10;
@@ -883,7 +884,6 @@
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('app_utama').classList.remove('d-none');
                 
-                // MENGAMBIL NAMA & ROLE DARI DATABASE PROFILES
                 const { data: profile } = await supabaseClient
                     .from('profiles')
                     .select('role, nama')
@@ -892,7 +892,6 @@
 
                 if (profile) {
                     rolePenggunaAktif = profile.role;
-                    // JIKA NAMA KOSONG (USER LAMA), GUNAKAN EMAIL SEBAGAI PENGGANTI SEMENTARA
                     namaPenggunaAktif = profile.nama || session.user.email; 
                 } else {
                     rolePenggunaAktif = 'bamin_banum'; 
@@ -933,7 +932,6 @@
             pesanEl.className = "mt-3 text-center small fw-bold text-primary";
             pesanEl.innerText = "Memproses masuk...";
 
-            // Langsung gunakan fungsi autentikasi bawaan Supabase
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password,
@@ -942,7 +940,6 @@
             if (error) {
                 pesanEl.className = "mt-3 text-center small fw-bold text-danger";
                 
-                // Cek pesan error dari sistem Supabase
                 if (error.message.includes("Invalid login credentials")) {
                     pesanEl.innerText = "Gagal masuk: Email atau password Anda salah!";
                 } else if (error.message.includes("Email not confirmed")) {
@@ -956,6 +953,27 @@
                 setTimeout(() => {
                     cekSesiPengguna();
                 }, 1000);
+            }
+        }
+
+        async function prosesLupaPassword() {
+            const email = prompt("Masukkan email akun Anda yang terdaftar:");
+            if (!email) return;
+
+            const pesanEl = document.getElementById('pesan_login');
+            pesanEl.className = "mt-3 text-center small fw-bold text-primary";
+            pesanEl.innerText = "Mengirim tautan pemulihan ke email...";
+
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href,
+            });
+
+            if (error) {
+                pesanEl.className = "mt-3 text-center small fw-bold text-danger";
+                pesanEl.innerText = "Gagal mengirim email: " + error.message;
+            } else {
+                pesanEl.className = "mt-3 text-center small fw-bold text-success";
+                pesanEl.innerText = "Tautan pemulihan kata sandi telah dikirim ke email Anda. Silakan cek inbox/spam.";
             }
         }
 
@@ -983,7 +1001,7 @@
         // --- CRUD MANAJEMEN USER ---
         async function simpanUser() {
             const editId = document.getElementById('edit_user_id').value;
-            const nama = document.getElementById('nama_baru').value; // MENGAMBIL NILAI NAMA
+            const nama = document.getElementById('nama_baru').value; 
             const email = document.getElementById('email_baru').value;
             const role = document.getElementById('role_baru').value;
             const satker = document.getElementById('satker_baru').value;
@@ -993,7 +1011,6 @@
                 pesanEl.className = "mt-3 fw-bold text-primary";
                 pesanEl.innerText = "Memperbarui data user...";
 
-                // UPDATE NAMA, ROLE, DAN SATKER DI DATABASE
                 const { error } = await supabaseClient.from('profiles').update({ nama: nama, role: role, satker: satker }).eq('id', editId);
                 
                 if (error) {
@@ -1022,7 +1039,6 @@
                     pesanEl.innerText = "Gagal membuat user: " + error.message;
                 } else if (data && data.user) {
                     const userId = data.user.id;
-                    // MENYIMPAN NAMA BERSAMAAN DENGAN PROFIL BARU
                     const { error: profileError } = await supabaseClient.from('profiles').insert([
                         { id: userId, nama: nama, email: email, role: role, satker: satker }
                     ]);
@@ -1042,7 +1058,7 @@
 
         function editUser(id, nama, email, role, satker) {
             document.getElementById('edit_user_id').value = id;
-            document.getElementById('nama_baru').value = nama; // MENGISI KOLOM NAMA SAAT EDIT
+            document.getElementById('nama_baru').value = nama; 
             document.getElementById('email_baru').value = email;
             document.getElementById('email_baru').disabled = true;
             document.getElementById('wrapper_password_baru').classList.add('d-none');
@@ -1068,7 +1084,7 @@
 
         function batalEditUser() {
             document.getElementById('edit_user_id').value = '';
-            document.getElementById('nama_baru').value = ''; // MEMBERSIHKAN KOLOM NAMA
+            document.getElementById('nama_baru').value = ''; 
             document.getElementById('email_baru').value = '';
             document.getElementById('email_baru').disabled = false;
             document.getElementById('password_baru').value = '';
@@ -1129,7 +1145,6 @@
             data.forEach((usr, idx) => {
                 let aksiHTML = '';
                 if (rolePenggunaAktif === 'super_admin') {
-                    // MEMASUKAN NAMA KE DALAM PARAMETER FUNGSI EDIT
                     aksiHTML = `
                         <td class="text-center">
                             <button class="btn btn-warning btn-sm me-1" onclick="editUser('${usr.id}', '${usr.nama || ''}', '${usr.email}', '${usr.role}', '${usr.satker || ''}')">Edit</button>
@@ -1138,7 +1153,6 @@
                     `;
                 }
 
-                // MENAMPILKAN NAMA DI TABEL PENGGUNA
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-center">${idx + 1}</td>
@@ -1294,7 +1308,6 @@
             pesanEl.className = "mt-3 fw-bold text-primary";
             pesanEl.innerText = "Sedang menyimpan data...";
 
-            // DATA YANG DISIMPAN MENGGUNAKAN VARIABEL NAMA LENGKAP PENGGUNA SAAT INI
             let dataYangDisimpan = { 
                 jenis_surat: jenisSurat,
                 nomor_surat: nomorSurat, 
@@ -1302,7 +1315,7 @@
                 pengirim: pengirimFinal, 
                 tujuan: tujuanSurat,
                 perihal: perihalSurat,
-                petugas: namaPenggunaAktif // MENYIMPAN NAMA ASLI PETUGAS
+                petugas: namaPenggunaAktif 
             };
 
             let dbError = null;
