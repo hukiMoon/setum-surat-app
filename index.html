@@ -116,7 +116,7 @@
                         </li>
                     </ul>
 
-                    <!-- PROFIL & DROPDOWN MENU (Teks Selamat Datang Diubah Agar Muncul di Semua Ukuran Layar) -->
+                    <!-- PROFIL & DROPDOWN MENU -->
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUserNav" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="me-2 small fw-bold d-inline" id="teks_selamat_datang">Hi, Selamat datang!</span>
@@ -991,17 +991,17 @@
                 let sumberTeks = '';
                 if (profile) {
                     rolePenggunaAktif = profile.role;
-                    const pangkatUser = profile.pangkat ? profile.pangkat + ' ' : '';
-                    const namaUser = profile.nama || session.user.email;
+                    const pangkatUser = profile.pangkat ? profile.pangkat.toUpperCase() + ' ' : '';
+                    const namaUser = profile.nama ? profile.nama.toUpperCase() : session.user.email;
                     namaPenggunaAktif = pangkatUser + namaUser; 
                     sumberTeks = profile.nama || session.user.email;
 
                     document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${namaPenggunaAktif}!`;
                 } else {
                     rolePenggunaAktif = 'bamin_banum'; 
-                    namaPenggunaAktif = session.user.email;
+                    namaPenggunaAktif = session.user.email.toUpperCase();
                     sumberTeks = session.user.email;
-                    document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${session.user.email}!`;
+                    document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${session.user.email.toUpperCase()}!`;
                 }
 
                 // Memperbarui avatar lingkaran inisial otomatis
