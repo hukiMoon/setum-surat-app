@@ -1000,10 +1000,14 @@
             const hashValue = window.location.hash;
             const queryParams = window.location.search;
             
-            // Deteksi jika link kedaluwarsa / error dari Supabase (baik di hash maupun query string)
+            // Periksa jika ada indikator error atau token kedaluwarsa di URL
             if (hashValue.includes('error=access_denied') || hashValue.includes('error_code=') || queryParams.includes('error=access_denied')) {
                 sessionStorage.removeItem('sedangResetPassword');
-                await supabaseClient.auth.signOut();
+                try {
+                    await supabaseClient.auth.signOut();
+                } catch (e) {
+                    // Abaikan jika error saat signOut
+                }
                 window.history.replaceState(null, null, window.location.pathname);
                 
                 document.getElementById('section_ubah_password').classList.add('d-none');
@@ -1039,7 +1043,9 @@
 
             if (hashValue.includes('error=access_denied') || hashValue.includes('error_code=') || queryParams.includes('error=access_denied')) {
                 sessionStorage.removeItem('sedangResetPassword');
-                await supabaseClient.auth.signOut();
+                try {
+                    await supabaseClient.auth.signOut();
+                } catch (e) {}
                 window.history.replaceState(null, null, window.location.pathname);
                 
                 document.getElementById('section_ubah_password').classList.add('d-none');
@@ -1172,7 +1178,9 @@
                 pesanEl.innerText = "Berhasil mengubah password! Mengalihkan ke halaman masuk...";
                 
                 sessionStorage.removeItem('sedangResetPassword');
-                await supabaseClient.auth.signOut();
+                try {
+                    await supabaseClient.auth.signOut();
+                } catch (e) {}
                 
                 setTimeout(() => {
                     window.history.replaceState(null, null, window.location.pathname);
@@ -1186,7 +1194,9 @@
 
         async function batalDanKeLogin() {
             sessionStorage.removeItem('sedangResetPassword');
-            await supabaseClient.auth.signOut();
+            try {
+                await supabaseClient.auth.signOut();
+            } catch (e) {}
             window.history.replaceState(null, null, window.location.pathname);
             document.getElementById('section_ubah_password').classList.add('d-none');
             document.getElementById('section_login').classList.remove('d-none');
