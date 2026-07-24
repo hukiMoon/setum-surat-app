@@ -94,6 +94,23 @@
         </div>
     </div>
 
+    <!-- ================= HALAMAN BUAT PASSWORD BARU ================= -->
+    <div id="section_ubah_password" class="container d-flex justify-content-center align-items-center vh-100 d-none">
+        <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+            <div class="text-center mb-4">
+                <img src="Setum_Polri.png" alt="Logo" style="height: 60px; width: auto;" class="mb-2">
+                <h4 class="text-primary fw-bold">Buat Password Baru</h4>
+                <p class="text-muted small">Silakan atur kata sandi baru untuk akun Anda.</p>
+            </div>
+            <div class="mb-3">
+                <label for="password_baru_pemulihan" class="form-label fw-bold">Password Baru:</label>
+                <input type="password" id="password_baru_pemulihan" class="form-control" placeholder="Minimal 6 karakter..." required>
+            </div>
+            <button class="btn btn-success w-100 fw-bold mb-3" onclick="prosesSimpanPasswordBaru()">Simpan Password</button>
+            <div id="pesan_ubah_password" class="mt-3 text-center small fw-bold"></div>
+        </div>
+    </div>
+
     <!-- ================= APLIKASI UTAMA ================= -->
     <div id="app_utama" class="d-none">
         <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
@@ -976,10 +993,24 @@
 
         // --- 2. SISTEM AUTENTIKASI & CEK ROLE ---
         async function cekSesiPengguna() {
+            // DETEKSI URL: Cek apakah user sedang dalam proses pemulihan (recovery) password
+            const hashValue = window.location.hash;
+            if (hashValue && hashValue.includes('type=recovery')) {
+                // Tampilkan halaman ubah password khusus dan hentikan proses muat aplikasi utama
+                document.getElementById('section_login').classList.add('d-none');
+                document.getElementById('section_lupa_password').classList.add('d-none');
+                document.getElementById('app_utama').classList.add('d-none');
+                
+                document.getElementById('section_ubah_password').classList.remove('d-none');
+                return; 
+            }
+
             const { data: { session } } = await supabaseClient.auth.getSession();
+            
             if (session) {
                 document.getElementById('section_login').classList.add('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
+                document.getElementById('section_ubah_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.remove('d-none');
                 
                 const { data: profile } = await supabaseClient
@@ -1004,7 +1035,6 @@
                     document.getElementById('teks_selamat_datang').innerText = `Hi, Selamat datang ${session.user.email.toUpperCase()}!`;
                 }
 
-                // Memperbarui avatar lingkaran inisial otomatis
                 const inisial = sumberTeks.charAt(0).toUpperCase();
                 document.getElementById('avatar_inisial_nav').innerText = inisial;
 
@@ -1025,7 +1055,39 @@
             } else {
                 document.getElementById('section_login').classList.remove('d-none');
                 document.getElementById('section_lupa_password').classList.add('d-none');
+                document.getElementById('section_ubah_password').classList.add('d-none');
                 document.getElementById('app_utama').classList.add('d-none');
+            }
+        }
+
+        async function prosesSimpanPasswordBaru() {
+            const passwordBaru = document.getElementById('password_baru_pemulihan').value;
+            const pesanEl = document.getElementById('pesan_ubah_password');
+
+            if (!passwordBaru || passwordBaru.length < 6) {
+                pesanEl.className = "mt-3 text-center small fw-bold text-danger";
+                pesanEl.innerText = "Password baru wajib diisi (minimal 6 karakter).";
+                return;
+            }
+
+            pesanEl.className = "mt-3 text-center small fw-bold text-primary";
+            pesanEl.innerText = "Menyimpan password baru...";
+
+            const { error } = await supabaseClient.auth.updateUser({
+                password: passwordBaru
+            });
+
+            if (error) {
+                pesanEl.className = "mt-3 text-center small fw-bold text-danger";
+                pesanEl.innerText = "Gagal mengubah password: " + error.message;
+            } else {
+                pesanEl.className = "mt-3 text-center small fw-bold text-success";
+                pesanEl.innerText = "Berhasil! Mengalihkan ke aplikasi utama...";
+                
+                setTimeout(() => {
+                    window.history.replaceState(null, null, window.location.pathname);
+                    cekSesiPengguna();
+                }, 2500);
             }
         }
 
@@ -1070,14 +1132,17 @@
         function gantiTampilanAuth(tujuan) {
             const secLogin = document.getElementById('section_login');
             const secLupa = document.getElementById('section_lupa_password');
+            const secUbah = document.getElementById('section_ubah_password');
             
+            secLogin.classList.add('d-none');
+            secLupa.classList.add('d-none');
+            secUbah.classList.add('d-none');
+
             if (tujuan === 'lupa') {
-                secLogin.classList.add('d-none');
                 secLupa.classList.remove('d-none');
                 document.getElementById('pesan_lupa').innerText = '';
                 document.getElementById('email_lupa').value = '';
             } else {
-                secLupa.classList.add('d-none');
                 secLogin.classList.remove('d-none');
                 document.getElementById('pesan_login').innerText = '';
             }
